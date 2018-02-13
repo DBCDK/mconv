@@ -6,6 +6,7 @@
 package dk.dbc.marc;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
+import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.ArgumentParser;
 import net.sourceforge.argparse4j.inf.ArgumentParserException;
 import net.sourceforge.argparse4j.inf.Namespace;
@@ -14,7 +15,15 @@ class Cli {
     Namespace args;
 
     Cli(String[] args) throws CliException {
-        final ArgumentParser parser = ArgumentParsers.newArgumentParser("mconv");
+        final ArgumentParser parser = ArgumentParsers.newArgumentParser("mconv")
+                .description("Reads in marcXchange records and outputs them as line format variant");
+        parser.addArgument("IN")
+                .type(Arguments.fileType().acceptSystemIn().verifyCanRead())
+                .help("Input file or standard input if given as a dash (-)");
+        parser.addArgument("-f", "--format")
+                .choices("LINE", "LINE_CONCAT")
+                .setDefault("LINE_CONCAT")
+                .help("Output format");
         try {
             this.args = parser.parseArgs(args);
         } catch (ArgumentParserException e) {
