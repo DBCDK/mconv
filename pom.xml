@@ -18,6 +18,7 @@
     <hamcrest.version>1.3</hamcrest.version>
     <jdk.version>1.8</jdk.version>
     <junit.version>5.0.2</junit.version>
+    <junit-platform-surefire-provider.version>1.0.0</junit-platform-surefire-provider.version>
     <maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
     <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
     <maven.surefire.version>2.19</maven.surefire.version>
@@ -102,7 +103,7 @@
         <dependency>
           <groupId>org.junit.platform</groupId>
           <artifactId>junit-platform-surefire-provider</artifactId>
-          <version>1.0.0</version>
+          <version>${junit-platform-surefire-provider.version}</version>
         </dependency>
         <dependency>
           <groupId>org.junit.jupiter</groupId>
