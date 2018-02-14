@@ -23,6 +23,14 @@
     <maven.surefire.version>2.19</maven.surefire.version>
   </properties>
 
+  <distributionManagement>
+    <repository>
+      <id>mavenrepo.dbc.dk</id>
+      <name>DBC's interne Maven Repository</name>
+      <url>http://mavenrepo.dbc.dk/content/repositories/releases</url>
+    </repository>
+  </distributionManagement>
+
   <dependencies>
     <dependency>
       <groupId>net.sourceforge.argparse4j</groupId>
