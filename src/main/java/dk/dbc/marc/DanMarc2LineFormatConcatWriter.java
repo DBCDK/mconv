@@ -15,10 +15,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 
 public class DanMarc2LineFormatConcatWriter extends DanMarc2LineFormatWriter {
-    DanMarc2LineFormatConcatWriter() {
-        super();
-    }
-
     @Override
     public byte[] write(MarcRecord marcRecord, Charset encoding)
             throws UnsupportedCharsetException, MarcWriterException {
