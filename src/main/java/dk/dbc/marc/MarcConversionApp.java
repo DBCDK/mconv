@@ -5,11 +5,14 @@
 
 package dk.dbc.marc;
 
+import dk.dbc.marc.binding.DataField;
+import dk.dbc.marc.binding.Field;
 import dk.dbc.marc.binding.MarcRecord;
 import dk.dbc.marc.reader.MarcReader;
 import dk.dbc.marc.reader.MarcReaderException;
 import dk.dbc.marc.reader.MarcXchangeV1Reader;
 import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
+import dk.dbc.marc.writer.LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriter;
 import dk.dbc.marc.writer.MarcWriterException;
 
@@ -20,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class MarcConversionApp {
     public static void main(String[] args) {
@@ -40,8 +44,8 @@ public class MarcConversionApp {
         try (InputStream is = "-".equals(in.getName()) ? System.in
                 : new FileInputStream((File) cli.args.get("IN"))) {
             final MarcReader marcReader = getMarcReader(is);
-            final MarcWriter marcWriter = getMarcWriter(cli);
             MarcRecord record = marcReader.read();
+            final MarcWriter marcWriter = getMarcWriter(cli, record);
             while (record != null) {
                 System.out.write(marcWriter.write(record, StandardCharsets.UTF_8));
                 record = marcReader.read();
@@ -60,12 +64,30 @@ public class MarcConversionApp {
         return new MarcXchangeV1Reader(is, StandardCharsets.UTF_8);
     }
 
-    private static MarcWriter getMarcWriter(Cli cli) {
+    private static MarcWriter getMarcWriter(Cli cli, MarcRecord record) {
         final String format = cli.args.getString("format");
         switch (format) {
-            case "LINE": return new DanMarc2LineFormatWriter();
-            case "LINE_CONCAT": return new DanMarc2LineFormatConcatWriter();
+            case "LINE": // pass-through
+            case "LINE_CONCAT": return getLineFormatWriterVariant(cli, record);
             default: throw new IllegalStateException("Unhandled format: " + format);
         }
+    }
+
+    private static MarcWriter getLineFormatWriterVariant(Cli cli, MarcRecord record) {
+        final String format = cli.args.getString("format");
+        if (isDanMarc2(record)) {
+            return format.equals("LINE") ? new DanMarc2LineFormatWriter()
+                    : new DanMarc2LineFormatConcatWriter();
+        }
+        final LineFormatWriter lineFormatWriter = format.equals("LINE")
+                ? new LineFormatWriter() : new LineFormatConcatWriter();
+        lineFormatWriter.setProperty(LineFormatWriter.Property.INCLUDE_LEADER,
+                cli.args.getBoolean("include_leader"));
+        return lineFormatWriter;
+    }
+
+    private static boolean isDanMarc2(MarcRecord record) {
+        final List<Field> fields = record.getFields();
+        return !fields.isEmpty() && fields.get(0) instanceof DataField;
     }
 }
