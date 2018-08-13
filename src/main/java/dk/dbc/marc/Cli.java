@@ -24,6 +24,10 @@ class Cli {
                 .choices("LINE", "LINE_CONCAT")
                 .setDefault("LINE_CONCAT")
                 .help("Output format");
+        parser.addArgument("--include-leader")
+                .setDefault(Arguments.storeFalse())
+                .action(Arguments.storeTrue())
+                .help("Include leader in line format output (MARC21 only)");
         try {
             this.args = parser.parseArgs(args);
         } catch (ArgumentParserException e) {

@@ -18,7 +18,7 @@ mconv --selfupdate
 $ mconv -h
 usage: mconv --version
 usage: mconv --selfupdate
-usage: mconv [-h] [-f {LINE,LINE_CONCAT}] IN
+usage: mconv [-h] [-f {LINE,LINE_CONCAT}] [--include-leader] IN
 
 Reads in marcXchange records and outputs them as line format variant
 
@@ -29,6 +29,7 @@ optional arguments:
   -h, --help             show this help message and exit
   -f {LINE,LINE_CONCAT}, --format {LINE,LINE_CONCAT}
                          Output format
+  --include-leader       Include leader in line format output (MARC21 only)
 ```
 
 ```bash
@@ -41,5 +42,5 @@ $ cat marc_collection.xml | mconv -
 
 # output format
 
-* LINE - standard danmarc2 line format
-* LINE_CONCAT - paste into code friendly danmarc2 line format (default)
+* LINE - line format danmarc2 or marc21 variant
+* LINE_CONCAT - paste into code friendly danmarc2 or marc21 line format (default)
