@@ -8,6 +8,9 @@ package dk.dbc.marc;
 import dk.dbc.marc.binding.DataField;
 import dk.dbc.marc.binding.Field;
 import dk.dbc.marc.binding.MarcRecord;
+import dk.dbc.marc.reader.DanMarc2LineFormatReader;
+import dk.dbc.marc.reader.Iso2709Reader;
+import dk.dbc.marc.reader.LineFormatReader;
 import dk.dbc.marc.reader.MarcReader;
 import dk.dbc.marc.reader.MarcReaderException;
 import dk.dbc.marc.reader.MarcXchangeV1Reader;
@@ -20,12 +23,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.PushbackInputStream;
 import java.io.UncheckedIOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class MarcConversionApp {
+    private static final int PUSHBACK_BUFFER_SIZE = 1000;
+
     public static void main(String[] args) {
         try {
             runWith(args);
@@ -41,14 +47,15 @@ public class MarcConversionApp {
     static void runWith(String[] args) throws CliException {
         final Cli cli = new Cli(args);
         final File in = cli.args.get("IN");
-        try (InputStream is = "-".equals(in.getName()) ? System.in
-                : new FileInputStream((File) cli.args.get("IN"))) {
-            final MarcReader marcReader = getMarcReader(is);
-            MarcRecord record = marcReader.read();
+        try (PushbackInputStream is = "-".equals(in.getName())
+                ? new PushbackInputStream(System.in, PUSHBACK_BUFFER_SIZE)
+                : new PushbackInputStream(new FileInputStream((File) cli.args.get("IN")), PUSHBACK_BUFFER_SIZE)) {
+            final MarcReader marcRecordReader = getMarcReader(is, StandardCharsets.UTF_8);
+            MarcRecord record = marcRecordReader.read();
             final MarcWriter marcWriter = getMarcWriter(cli, record);
             while (record != null) {
                 System.out.write(marcWriter.write(record, StandardCharsets.UTF_8));
-                record = marcReader.read();
+                record = marcRecordReader.read();
             }
         } catch (FileNotFoundException e) {
             throw new CliException(e);
@@ -59,9 +66,19 @@ public class MarcConversionApp {
         }
     }
 
-    private static MarcReader getMarcReader(InputStream is) throws MarcReaderException {
-        // TODO: 13-02-18 In time this should made to guess the marc format instead of assuming marcXchange
-        return new MarcXchangeV1Reader(is, StandardCharsets.UTF_8);
+    private static MarcReader getMarcReader(PushbackInputStream is, Charset encoding) throws MarcReaderException {
+        final MarcFormatDeducer marcFormatDeducer = new MarcFormatDeducer(PUSHBACK_BUFFER_SIZE);
+
+        switch (marcFormatDeducer.deduce(is, encoding)) {
+            case LINE:
+                return new LineFormatReader(is, encoding);
+            case DANMARC2_LINE:
+                return new DanMarc2LineFormatReader(is, encoding);
+            case MARCXCHANGE:
+                return new MarcXchangeV1Reader(is, encoding);
+            default:
+                return new Iso2709Reader(is, encoding);
+        }
     }
 
     private static MarcWriter getMarcWriter(Cli cli, MarcRecord record) {
