@@ -51,7 +51,8 @@ public class MarcConversionApp {
         try (PushbackInputStream is = "-".equals(in.getName())
                 ? new PushbackInputStream(System.in, PUSHBACK_BUFFER_SIZE)
                 : new PushbackInputStream(new FileInputStream((File) cli.args.get("IN")), PUSHBACK_BUFFER_SIZE)) {
-            final MarcReader marcRecordReader = getMarcReader(is, StandardCharsets.UTF_8);
+            final Charset encoding = Encoding.of(cli.args.getString("input_encoding"));
+            final MarcReader marcRecordReader = getMarcReader(is, encoding);
             MarcRecord record = marcRecordReader.read();
             final MarcWriter marcWriter = getMarcWriter(cli, record);
             while (record != null) {
@@ -70,7 +71,24 @@ public class MarcConversionApp {
     private static MarcReader getMarcReader(PushbackInputStream is, Charset encoding) throws MarcReaderException {
         final MarcFormatDeducer marcFormatDeducer = new MarcFormatDeducer(PUSHBACK_BUFFER_SIZE);
 
-        switch (marcFormatDeducer.deduce(is, encoding)) {
+        Charset sampleEncoding = encoding;
+        if (encoding instanceof DanMarc2Charset) {
+            // Don't complicate the format deduction
+            // by introducing the DanMarc2 charset
+            // into the mix.
+            sampleEncoding = Encoding.of("LATIN1");
+        }
+        final MarcFormatDeducer.FORMAT format =
+                marcFormatDeducer.deduce(is, sampleEncoding);
+
+        if (format == MarcFormatDeducer.FORMAT.LINE
+                && encoding instanceof DanMarc2Charset) {
+            // For line format we need a special
+            // variant of the DanMarc2 charset.
+            encoding = new DanMarc2Charset(DanMarc2Charset.Variant.LINE_FORMAT);
+        }
+
+        switch (format) {
             case LINE:
                 return new LineFormatReader(is, encoding);
             case DANMARC2_LINE:
