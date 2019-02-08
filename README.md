@@ -1,11 +1,11 @@
 # mconv
-mconv is a commandline-tool to convert marcXchange records into unit test
-friendly line formats. Currently only UTF-8 encoded output is supported.
+mconv is a commandline-tool to read in and parse MARC records from file and
+output in either MARC21 or DANMARC2 line-format or ISO2709.
 
-# installation
+## installation
  
 ```bash
-$ curl -sL http://mavenrepo.dbc.dk/content/repositories/releases/dk/dbc/mconv/1.0.1/mconv-1.0.1.jar -o mconv.jar && unzip -op mconv.jar mconv | bash -s -- --install
+$ curl -sL http://mavenrepo.dbc.dk/content/repositories/releases/dk/dbc/mconv/1.0.3/mconv-1.0.3.jar -o mconv.jar && unzip -op mconv.jar mconv | bash -s -- --install
 ```
 
 Keep the installation up-to-date using the selfupdate action
@@ -13,23 +13,34 @@ Keep the installation up-to-date using the selfupdate action
 mconv --selfupdate
 ```
 
-# usage 
+## usage 
 ```bash
 $ mconv -h
 usage: mconv --version
 usage: mconv --selfupdate
-usage: mconv [-h] [-f {LINE,LINE_CONCAT}] [--include-leader] IN
+usage: mconv [-h] [-f {LINE,LINE_CONCAT,ISO}] [-i INPUT_ENCODING] [-o OUTPUT_ENCODING] [--include-leader] IN
 
-Reads in marcXchange records and outputs them as line format variant
+Reads in and parses MARC records from file
+and supports output in both MARC21 or DANMARC2 line-format and ISO2709
 
 positional arguments:
   IN                     Input file or standard input if given as a dash (-)
 
 optional arguments:
   -h, --help             show this help message and exit
-  -f {LINE,LINE_CONCAT}, --format {LINE,LINE_CONCAT}
-                         Output format
-  --include-leader       Include leader in line format output (MARC21 only)
+  -f {LINE,LINE_CONCAT,ISO}, --format {LINE,LINE_CONCAT,ISO}
+                         Output format.
+                         Defaults to LINE_CONCAT
+  -i INPUT_ENCODING, --input-encoding INPUT_ENCODING
+                         Character set of the input MARC record(s)
+                         eg. LATIN-1, DANMARC2, MARC-8, UTF-8, and more.
+                         Defaults to UTF-8.
+  -o OUTPUT_ENCODING, --output-encoding OUTPUT_ENCODING
+                         Character set of the output MARC record(s)
+                         eg. LATIN-1, DANMARC2, MARC-8, UTF-8, and more.
+                         Defaults to UTF-8.
+  --include-leader       Include leader in line format output (MARC21 only).
+                         Defaults to false.
 ```
 
 ```bash
@@ -40,7 +51,8 @@ $ mconv marc_collection.xml
 $ cat marc_collection.xml | mconv -
 ```
 
-# output format
+## output format
 
-* LINE - line format danmarc2 or marc21 variant
-* LINE_CONCAT - paste into code friendly danmarc2 or marc21 line format (default)
+* LINE - line format DANMARC2 or MARC21 variant
+* LINE_CONCAT - paste-into-code friendly DANMARC2 or MARC21 line format (default)
+* ISO - ISO2709
