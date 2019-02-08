@@ -15,6 +15,7 @@ import dk.dbc.marc.reader.MarcReader;
 import dk.dbc.marc.reader.MarcReaderException;
 import dk.dbc.marc.reader.MarcXchangeV1Reader;
 import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
+import dk.dbc.marc.writer.Iso2709Writer;
 import dk.dbc.marc.writer.LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriter;
 import dk.dbc.marc.writer.MarcWriterException;
@@ -85,8 +86,12 @@ public class MarcConversionApp {
         final String format = cli.args.getString("format");
         switch (format) {
             case "LINE": // pass-through
-            case "LINE_CONCAT": return getLineFormatWriterVariant(cli, record);
-            default: throw new IllegalStateException("Unhandled format: " + format);
+            case "LINE_CONCAT":
+                return getLineFormatWriterVariant(cli, record);
+            case "ISO":
+                return new Iso2709Writer();
+            default:
+                throw new IllegalStateException("Unhandled format: " + format);
         }
     }
 

@@ -21,7 +21,7 @@ class Cli {
                 .type(Arguments.fileType().acceptSystemIn().verifyCanRead())
                 .help("Input file or standard input if given as a dash (-)");
         parser.addArgument("-f", "--format")
-                .choices("LINE", "LINE_CONCAT")
+                .choices("LINE", "LINE_CONCAT", "ISO")
                 .setDefault("LINE_CONCAT")
                 .help("Output format");
         parser.addArgument("--include-leader")
