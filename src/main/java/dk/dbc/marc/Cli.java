@@ -16,7 +16,8 @@ class Cli {
 
     Cli(String[] args) throws CliException {
         final ArgumentParser parser = ArgumentParsers.newArgumentParser("mconv")
-                .description("Reads in marcXchange records and outputs them as line format variant");
+                .description("Reads in and parses MARC records from file\n" +
+                        "and supports output in both MARC21 or DANMARC2 line-format and ISO2709");
         parser.addArgument("IN")
                 .type(Arguments.fileType().acceptSystemIn().verifyCanRead())
                 .help("Input file or standard input if given as a dash (-)");
@@ -38,7 +39,8 @@ class Cli {
         parser.addArgument("--include-leader")
                 .setDefault(Arguments.storeFalse())
                 .action(Arguments.storeTrue())
-                .help("Include leader in line format output (MARC21 only)");
+                .help("Include leader in line format output (MARC21 only).\n" +
+                        "Defaults to false.");
         try {
             this.args = parser.parseArgs(args);
         } catch (ArgumentParserException e) {
