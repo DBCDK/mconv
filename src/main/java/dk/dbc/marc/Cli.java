@@ -30,6 +30,11 @@ class Cli {
                 .help("Character set of the input MARC record(s)\n" +
                         "eg. LATIN-1, DANMARC2, MARC-8, UTF-8, and more.\n" +
                         "Defaults to UTF-8.");
+        parser.addArgument("-o", "--output-encoding")
+                .setDefault("UTF-8")
+                .help("Character set of the output MARC record(s)\n" +
+                        "eg. LATIN-1, DANMARC2, MARC-8, UTF-8, and more.\n" +
+                        "Defaults to UTF-8.");
         parser.addArgument("--include-leader")
                 .setDefault(Arguments.storeFalse())
                 .action(Arguments.storeTrue())

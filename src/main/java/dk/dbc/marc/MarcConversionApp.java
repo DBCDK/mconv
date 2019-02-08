@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.PushbackInputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class MarcConversionApp {
@@ -51,12 +50,13 @@ public class MarcConversionApp {
         try (PushbackInputStream is = "-".equals(in.getName())
                 ? new PushbackInputStream(System.in, PUSHBACK_BUFFER_SIZE)
                 : new PushbackInputStream(new FileInputStream((File) cli.args.get("IN")), PUSHBACK_BUFFER_SIZE)) {
-            final Charset encoding = Encoding.of(cli.args.getString("input_encoding"));
-            final MarcReader marcRecordReader = getMarcReader(is, encoding);
+            final Charset inputEncoding = Encoding.of(cli.args.getString("input_encoding"));
+            final Charset outputEncoding = Encoding.of(cli.args.getString("output_encoding"));
+            final MarcReader marcRecordReader = getMarcReader(is, inputEncoding);
             MarcRecord record = marcRecordReader.read();
             final MarcWriter marcWriter = getMarcWriter(cli, record);
             while (record != null) {
-                System.out.write(marcWriter.write(record, StandardCharsets.UTF_8));
+                System.out.write(marcWriter.write(record, outputEncoding));
                 record = marcRecordReader.read();
             }
         } catch (FileNotFoundException e) {
