@@ -36,10 +36,15 @@ class Cli {
                 .help("Character set of the output MARC record(s)\n" +
                         "eg. LATIN-1, DANMARC2, MARC-8, UTF-8, and more.\n" +
                         "Defaults to UTF-8.");
-        parser.addArgument("--include-leader")
+        parser.addArgument("-l", "--include-leader")
                 .setDefault(Arguments.storeFalse())
                 .action(Arguments.storeTrue())
                 .help("Include leader in line format output (MARC21 only).\n" +
+                        "Defaults to false.");
+        parser.addArgument("-p", "--include-whitespace-padding")
+                .setDefault(Arguments.storeFalse())
+                .action(Arguments.storeTrue())
+                .help("Pad subfields with whitespace in line format output (MARC21 only).\n" +
                         "Defaults to false.");
         try {
             this.args = parser.parseArgs(args);

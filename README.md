@@ -5,7 +5,7 @@ output in either MARC21 or DANMARC2 line-format or ISO2709.
 ## installation
  
 ```bash
-$ curl -sL http://mavenrepo.dbc.dk/content/repositories/releases/dk/dbc/mconv/1.0.3/mconv-1.0.3.jar -o mconv.jar && unzip -op mconv.jar mconv | bash -s -- --install
+$ curl -sL http://mavenrepo.dbc.dk/content/repositories/releases/dk/dbc/mconv/1.0.4/mconv-1.0.4.jar -o mconv.jar && unzip -op mconv.jar mconv | bash -s -- --install
 ```
 
 Keep the installation up-to-date using the selfupdate action
@@ -18,7 +18,7 @@ mconv --selfupdate
 $ mconv -h
 usage: mconv --version
 usage: mconv --selfupdate
-usage: mconv [-h] [-f {LINE,LINE_CONCAT,ISO}] [-i INPUT_ENCODING] [-o OUTPUT_ENCODING] [--include-leader] IN
+usage: mconv [-h] [-f {LINE,LINE_CONCAT,ISO}] [-i INPUT_ENCODING] [-o OUTPUT_ENCODING] [-l] [-p] IN
 
 Reads in and parses MARC records from file
 and supports output in both MARC21 or DANMARC2 line-format and ISO2709
@@ -39,7 +39,10 @@ optional arguments:
                          Character set of the output MARC record(s)
                          eg. LATIN-1, DANMARC2, MARC-8, UTF-8, and more.
                          Defaults to UTF-8.
-  --include-leader       Include leader in line format output (MARC21 only).
+  -l, --include-leader   Include leader in line format output (MARC21 only).
+                         Defaults to false.
+  -p, --include-whitespace-padding
+                         Pad subfields with whitespace in line format output (MARC21 only).
                          Defaults to false.
 ```
 
