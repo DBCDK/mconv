@@ -52,7 +52,7 @@ public class MarcConversionApp {
                 : new PushbackInputStream(new FileInputStream((File) cli.args.get("IN")), PUSHBACK_BUFFER_SIZE)) {
             final Charset inputEncoding = Encoding.of(cli.args.getString("input_encoding"));
             final Charset outputEncoding = Encoding.of(cli.args.getString("output_encoding"));
-            final MarcReader marcRecordReader = getMarcReader(is, inputEncoding);
+            final MarcReader marcRecordReader = getMarcReader(cli, is, inputEncoding);
             MarcRecord record = marcRecordReader.read();
             final MarcWriter marcWriter = getMarcWriter(cli, record);
             while (record != null) {
@@ -68,7 +68,7 @@ public class MarcConversionApp {
         }
     }
 
-    private static MarcReader getMarcReader(PushbackInputStream is, Charset encoding) throws MarcReaderException {
+    private static MarcReader getMarcReader(Cli cli, PushbackInputStream is, Charset encoding) throws MarcReaderException {
         final MarcFormatDeducer marcFormatDeducer = new MarcFormatDeducer(PUSHBACK_BUFFER_SIZE);
 
         Charset sampleEncoding = encoding;
@@ -90,7 +90,9 @@ public class MarcConversionApp {
 
         switch (format) {
             case LINE:
-                return new LineFormatReader(is, encoding);
+                return new LineFormatReader(is, encoding)
+                        .setProperty(LineFormatReader.Property.INCLUDE_WHITESPACE_PADDING,
+                                cli.args.getBoolean("include_whitespace_padding"));
             case DANMARC2_LINE:
                 return new DanMarc2LineFormatReader(is, encoding);
             case MARCXCHANGE:
@@ -121,9 +123,11 @@ public class MarcConversionApp {
         }
         final LineFormatWriter lineFormatWriter = format.equals("LINE")
                 ? new LineFormatWriter() : new LineFormatConcatWriter();
-        lineFormatWriter.setProperty(LineFormatWriter.Property.INCLUDE_LEADER,
-                cli.args.getBoolean("include_leader"));
-        return lineFormatWriter;
+        return lineFormatWriter
+                .setProperty(LineFormatWriter.Property.INCLUDE_LEADER,
+                        cli.args.getBoolean("include_leader"))
+                .setProperty(LineFormatWriter.Property.INCLUDE_WHITESPACE_PADDING,
+                        cli.args.getBoolean("include_whitespace_padding"));
     }
 
     private static boolean isDanMarc2(MarcRecord record) {
