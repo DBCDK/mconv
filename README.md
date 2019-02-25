@@ -5,7 +5,7 @@ output in either MARC21 or DANMARC2 line-format or ISO2709.
 ## installation
  
 ```bash
-$ curl -sL http://mavenrepo.dbc.dk/content/repositories/releases/dk/dbc/mconv/1.0.4/mconv-1.0.4.jar -o mconv.jar && unzip -op mconv.jar mconv | bash -s -- --install
+$ curl -sL http://mavenrepo.dbc.dk/content/repositories/releases/dk/dbc/mconv/1.0.5/mconv-1.0.5.jar -o mconv.jar && unzip -op mconv.jar mconv | bash -s -- --install
 ```
 
 Keep the installation up-to-date using the selfupdate action
