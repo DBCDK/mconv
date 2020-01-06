@@ -22,7 +22,6 @@ import dk.dbc.marc.writer.MarcWriterException;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PushbackInputStream;
 import java.io.UncheckedIOException;
@@ -54,13 +53,14 @@ public class MarcConversionApp {
             final Charset outputEncoding = Encoding.of(cli.args.getString("output_encoding"));
             final MarcReader marcRecordReader = getMarcReader(cli, is, inputEncoding);
             MarcRecord record = marcRecordReader.read();
+            if (record == null) {
+                throw new IllegalArgumentException("Unknown input format");
+            }
             final MarcWriter marcWriter = getMarcWriter(cli, record);
             while (record != null) {
                 System.out.write(marcWriter.write(record, outputEncoding));
                 record = marcRecordReader.read();
             }
-        } catch (FileNotFoundException e) {
-            throw new CliException(e);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } catch (MarcReaderException | MarcWriterException e) {
