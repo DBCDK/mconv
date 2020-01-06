@@ -62,7 +62,7 @@ public class MarcFormatDeducer {
                         return FORMAT.DANMARC2_LINE;
                     }
                 } finally {
-                    is.unread(buffer);
+                    is.unread(buffer, 0, bytesRead);
                 }
             }
         } catch (IOException e) {
