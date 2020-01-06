@@ -14,6 +14,7 @@ import dk.dbc.marc.reader.LineFormatReader;
 import dk.dbc.marc.reader.MarcReader;
 import dk.dbc.marc.reader.MarcReaderException;
 import dk.dbc.marc.reader.MarcXchangeV1Reader;
+import dk.dbc.marc.reader.MarcXmlReader;
 import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
 import dk.dbc.marc.writer.Iso2709Writer;
 import dk.dbc.marc.writer.LineFormatWriter;
@@ -97,6 +98,8 @@ public class MarcConversionApp {
                 return new DanMarc2LineFormatReader(is, encoding);
             case MARCXCHANGE:
                 return new MarcXchangeV1Reader(is, encoding);
+            case MARCXML:
+                return new MarcXmlReader(is, encoding);
             default:
                 return new Iso2709Reader(is, encoding);
         }

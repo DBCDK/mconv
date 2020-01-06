@@ -30,6 +30,14 @@ class MarcFormatDeducerTest {
     }
 
     @Test
+    void deduceMarcXml() {
+        final MarcFormatDeducer.FORMAT format = deducer.deduce(
+                fromResource("src/test/resources/marcxml_collection.xml", PUSHBACK_BUFFER_SIZE),
+                StandardCharsets.UTF_8);
+        assertThat(format, is(MarcFormatDeducer.FORMAT.MARCXML));
+    }
+
+    @Test
     void deduceLineFormat() {
         final MarcFormatDeducer.FORMAT format = deducer.deduce(
                 fromResource("src/test/resources/marc_collection.lin", PUSHBACK_BUFFER_SIZE),
