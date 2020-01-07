@@ -24,6 +24,7 @@ public class MarcFormatDeducer {
         DANMARC2_LINE,
         LINE,
         MARCXCHANGE,
+        MARCXML,
         ISO2709
     }
 
@@ -53,13 +54,15 @@ public class MarcFormatDeducer {
                 try {
                     if (isMarcxchange(prolog)) {
                         return FORMAT.MARCXCHANGE;
+                    } else if (isMarcXml(prolog)) {
+                        return FORMAT.MARCXML;
                     } else if (isLineFormat(prolog)) {
                         return FORMAT.LINE;
                     } else if (isDanmarc2LineFormat(prolog)) {
                         return FORMAT.DANMARC2_LINE;
                     }
                 } finally {
-                    is.unread(buffer);
+                    is.unread(buffer, 0, bytesRead);
                 }
             }
         } catch (IOException e) {
@@ -92,7 +95,11 @@ public class MarcFormatDeducer {
     }
 
     private boolean isMarcxchange(String string) {
-        return string.startsWith("<");
+        return string.startsWith("<") && string.contains("info:lc/xmlns/marcxchange-v1");
+    }
+
+    private boolean isMarcXml(String string) {
+        return string.startsWith("<") && string.contains("http://www.loc.gov/MARC21/slim");
     }
 
     private boolean isDanmarc2LineFormat(String string) {

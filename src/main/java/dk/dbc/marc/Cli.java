@@ -19,7 +19,7 @@ class Cli {
                 .description("Reads in and parses MARC records from file\n" +
                         "and supports output in both MARC21 or DANMARC2 line-format and ISO2709");
         parser.addArgument("IN")
-                .type(Arguments.fileType().acceptSystemIn().verifyCanRead())
+                .type(Arguments.fileType().acceptSystemIn().verifyExists().verifyCanRead())
                 .help("Input file or standard input if given as a dash (-)");
         parser.addArgument("-f", "--format")
                 .choices("LINE", "LINE_CONCAT", "ISO")

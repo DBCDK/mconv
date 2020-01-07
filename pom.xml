@@ -8,13 +8,12 @@
   <groupId>dk.dbc</groupId>
   <artifactId>mconv</artifactId>
   <packaging>jar</packaging>
-  <version>1.0.6</version>
+  <version>1.1</version>
   <name>mconv</name>
   <url>https://github.com/DBCDK/mconv/</url>
 
   <properties>
     <argparse4j.version>0.7.0</argparse4j.version>
-    <dbc-commons.version>1.3-SNAPSHOT</dbc-commons.version>
     <hamcrest.version>1.3</hamcrest.version>
     <jdk.version>1.8</jdk.version>
     <junit.version>5.0.2</junit.version>
@@ -42,7 +41,7 @@
     <dependency>
       <groupId>dk.dbc</groupId>
       <artifactId>dbc-commons-marc</artifactId>
-      <version>${dbc-commons.version}</version>
+      <version>1.4-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>

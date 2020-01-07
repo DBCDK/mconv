@@ -14,6 +14,7 @@ import dk.dbc.marc.reader.LineFormatReader;
 import dk.dbc.marc.reader.MarcReader;
 import dk.dbc.marc.reader.MarcReaderException;
 import dk.dbc.marc.reader.MarcXchangeV1Reader;
+import dk.dbc.marc.reader.MarcXmlReader;
 import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
 import dk.dbc.marc.writer.Iso2709Writer;
 import dk.dbc.marc.writer.LineFormatWriter;
@@ -22,7 +23,6 @@ import dk.dbc.marc.writer.MarcWriterException;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PushbackInputStream;
 import java.io.UncheckedIOException;
@@ -54,13 +54,14 @@ public class MarcConversionApp {
             final Charset outputEncoding = Encoding.of(cli.args.getString("output_encoding"));
             final MarcReader marcRecordReader = getMarcReader(cli, is, inputEncoding);
             MarcRecord record = marcRecordReader.read();
+            if (record == null) {
+                throw new IllegalArgumentException("Unknown input format");
+            }
             final MarcWriter marcWriter = getMarcWriter(cli, record);
             while (record != null) {
                 System.out.write(marcWriter.write(record, outputEncoding));
                 record = marcRecordReader.read();
             }
-        } catch (FileNotFoundException e) {
-            throw new CliException(e);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } catch (MarcReaderException | MarcWriterException e) {
@@ -97,6 +98,8 @@ public class MarcConversionApp {
                 return new DanMarc2LineFormatReader(is, encoding);
             case MARCXCHANGE:
                 return new MarcXchangeV1Reader(is, encoding);
+            case MARCXML:
+                return new MarcXmlReader(is, encoding);
             default:
                 return new Iso2709Reader(is, encoding);
         }
