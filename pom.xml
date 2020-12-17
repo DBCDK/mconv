@@ -24,12 +24,20 @@
     <slf4j.version>1.7.25</slf4j.version>
   </properties>
 
+  <repositories>
+    <repository>
+      <id>mavenrepo.dbc.dk</id>
+      <url>http://mavenrepo.dbc.dk/nexus/content/groups/public</url>
+    </repository>
+  </repositories>
+
   <distributionManagement>
     <repository>
       <id>mavenrepo.dbc.dk</id>
       <name>DBC's interne Maven Repository</name>
       <url>http://mavenrepo.dbc.dk/content/repositories/releases</url>
     </repository>
+
   </distributionManagement>
 
   <dependencies>
@@ -41,7 +49,7 @@
     <dependency>
       <groupId>dk.dbc</groupId>
       <artifactId>dbc-commons-marc</artifactId>
-      <version>1.4-SNAPSHOT</version>
+      <version>1.5-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
