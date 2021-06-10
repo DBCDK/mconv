@@ -8,7 +8,7 @@
   <groupId>dk.dbc</groupId>
   <artifactId>mconv</artifactId>
   <packaging>jar</packaging>
-  <version>1.1</version>
+  <version>1.2</version>
   <name>mconv</name>
   <url>https://github.com/DBCDK/mconv/</url>
 
@@ -21,8 +21,15 @@
     <maven-assembly-plugin.version>3.1.0</maven-assembly-plugin.version>
     <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
     <maven.surefire.version>2.19</maven.surefire.version>
-    <slf4j.version>1.7.25</slf4j.version>
+    <slf4j.version>1.7.30</slf4j.version>
   </properties>
+
+  <repositories>
+    <repository>
+      <id>mavenrepo.dbc.dk</id>
+      <url>http://mavenrepo.dbc.dk/nexus/content/groups/public</url>
+    </repository>
+  </repositories>
 
   <distributionManagement>
     <repository>
@@ -41,7 +48,7 @@
     <dependency>
       <groupId>dk.dbc</groupId>
       <artifactId>dbc-commons-marc</artifactId>
-      <version>1.4-SNAPSHOT</version>
+      <version>1.6-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
