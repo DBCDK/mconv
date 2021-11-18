@@ -58,15 +58,6 @@ pipeline {
                 }
             }
         }
-        stage("build-native") {
-            steps {
-                sh """
-                     mvn -Pnative -Dtest=!*Test -DfailIfNoTests=false -pl cli/runner/ -am verify
-                """
-                junit testResults: '**/target/*-reports/TEST-*Native*.xml'
-                archiveArtifacts artifacts: 'cli/runner/target/dbc-gjsrun', fingerprint: true
-            }
-        }
         stage("deploy") {
             when {
                 branch "main"
