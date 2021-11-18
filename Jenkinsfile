@@ -60,7 +60,7 @@ pipeline {
         }
         stage("deploy") {
             when {
-                branch "main"
+                branch "master"
             }
             steps {
                 sh "mvn jar:jar deploy:deploy"
@@ -71,13 +71,13 @@ pipeline {
     post {
         failure {
             script {
-                if ("${env.BRANCH_NAME}".equals('main')) {
+                if ("${env.BRANCH_NAME}".equals('master')) {
                     emailext(
                         recipientProviders: [developers(), culprits()],
                         to: teamEmail,
                         subject: "[Jenkins] ${env.JOB_NAME} #${env.BUILD_NUMBER} failed",
                         mimeType: 'text/html; charset=UTF-8',
-                        body: "<p>The main build failed. Log attached.</p><p><a href=\"${env.BUILD_URL}\">Build information</a>.</p>",
+                        body: "<p>The master build failed. Log attached.</p><p><a href=\"${env.BUILD_URL}\">Build information</a>.</p>",
                         attachLog: true
                     )
                     slackSend(channel: teamSlack,
@@ -100,13 +100,13 @@ pipeline {
 
         success {
             script {
-                if ("${env.BRANCH_NAME}".equals('main') && currentBuild.getPreviousBuild() != null && currentBuild.getPreviousBuild().result == 'FAILURE') {
+                if ("${env.BRANCH_NAME}".equals('master') && currentBuild.getPreviousBuild() != null && currentBuild.getPreviousBuild().result == 'FAILURE') {
                     emailext(
                         recipientProviders: [developers(), culprits()],
                         to: teamEmail,
                         subject: "[Jenkins] ${env.JOB_NAME} #${env.BUILD_NUMBER} back to normal",
                         mimeType: 'text/html; charset=UTF-8',
-                        body: "<p>The main build is back to normal.</p><p><a href=\"${env.BUILD_URL}\">Build information</a>.</p>",
+                        body: "<p>The master build is back to normal.</p><p><a href=\"${env.BUILD_URL}\">Build information</a>.</p>",
                         attachLog: false)
                     slackSend(channel: teamSlack,
                         color: 'good',
