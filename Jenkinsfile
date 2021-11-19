@@ -2,7 +2,7 @@
 
 def workerNode = "devel10"
 def teamEmail = 'metascrum@dbc.dk'
-def teamSlack = 'metascrum'
+def teamSlack = 'meta-notifications'
 
 pipeline {
     agent {
