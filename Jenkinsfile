@@ -71,7 +71,7 @@ pipeline {
     post {
         failure {
             script {
-                if ("${env.BRANCH_NAME}".equals('master')) {
+                if (env.BRANCH_NAME == 'master') {
                     emailext(
                         recipientProviders: [developers(), culprits()],
                         to: teamEmail,
@@ -100,7 +100,7 @@ pipeline {
 
         success {
             script {
-                if ("${env.BRANCH_NAME}".equals('master') && currentBuild.getPreviousBuild() != null && currentBuild.getPreviousBuild().result == 'FAILURE') {
+                if (env.BRANCH_NAME == 'master' && currentBuild.getPreviousBuild() != null && currentBuild.getPreviousBuild().result == 'FAILURE') {
                     emailext(
                         recipientProviders: [developers(), culprits()],
                         to: teamEmail,
