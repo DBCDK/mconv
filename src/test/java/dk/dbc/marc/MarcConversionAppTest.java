@@ -24,10 +24,9 @@ class MarcConversionAppTest {
         final PrintStream out = System.out;
         try (ByteArrayOutputStream capturedStdout = new ByteArrayOutputStream()) {
             System.setOut(new PrintStream(capturedStdout));
+            int exitCode=MarcConversionApp.runWith(new String[]{"src/test/resources/marc_collection.xml", "--format=LINE_CONCAT"});
 
-            MarcConversionApp.runWith(new String[]
-                    {"src/test/resources/marc_collection.xml", "--format=LINE_CONCAT"});
-
+            assertThat(exitCode, is(0));
             assertThat(capturedStdout.toString(StandardCharsets.UTF_8.name()),
                     is(readResourceAsString("src/test/resources/marc_collection.lin_concat",
                             StandardCharsets.UTF_8)));
@@ -37,6 +36,6 @@ class MarcConversionAppTest {
     }
 
     private String readResourceAsString(String resource, Charset encoding) throws IOException {
-        return new String(Files.readAllBytes(Paths.get(resource)), encoding);
+        return Files.readString(Paths.get(resource), encoding);
     }
 }
