@@ -34,7 +34,10 @@ import java.util.List;
 import static dk.dbc.marc.RecordFormat.LINE;
 import static dk.dbc.marc.RecordFormat.LINE_CONCAT;
 
-@CommandLine.Command(name = "mconv ", version = "1.0", mixinStandardHelpOptions = true)
+@CommandLine.Command(name = "mconv ", version = "1.0",
+        description = "Reads in and parses MARC records from file\n" +
+                       "and supports output in both MARC21 or DANMARC2 line-format and ISO2709",
+        mixinStandardHelpOptions = true)
 public class MarcConversionApp implements Runnable {
     private static final int PUSHBACK_BUFFER_SIZE = 1000;
 
@@ -47,27 +50,29 @@ public class MarcConversionApp implements Runnable {
     @CommandLine.Option(
             names = { "-f", "--format"},
             defaultValue = "LINE_CONCAT",
-            description = "Output format ${COMPLETION-CANDIDATES}, (default: ${DEFAULT_VALUE}).")
+            description = "Output format ${COMPLETION-CANDIDATES}\ndefaults to  LINE_CONCAT.")
     RecordFormat outputFormat=LINE_CONCAT;
 
     @CommandLine.Option(
             names = {"-i", "--input-encoding"},
             defaultValue = "UTF8",
-            description = "Character set of the input MARC record(s)\neg. LATIN-1, DANMARC2, MARC-8, UTF-8, and more.\nDefaults to ${DEFAULT_VALUE})"
+            description = "Character set of the input MARC record(s)\neg. LATIN-1, DANMARC2, MARC-8, UTF-8, and more.\nDefaults to UTF-8)"
     )
     Charset inputEncoding;
+
     @CommandLine.Option(
             names = {"-o", "--output-encoding"},
             defaultValue = "UTF8",
-            description = "Character set of the output MARC record(s)\neg. LATIN-1, DANMARC2, MARC-8, UTF-8, and more.\nDefaults to ${DEFAULT_VALUE})"
+            description = "Character set of the output MARC record(s)\neg. LATIN-1, DANMARC2, MARC-8, UTF-8, and more.\nDefaults to UTF-8)"
     )
     Charset outputEncoding = StandardCharsets.UTF_8;
 
     @CommandLine.Option(names = {"-l", "--include-leader"},
             defaultValue = "false",
-            description = "Include leader in line format output (MARC21 only). Defaults to ${DEFAULT_VALUE})"
+            description = "Include leader in line format output (MARC21 only).\nDefaults to false)"
     )
     Boolean includeLeader = Boolean.FALSE;
+
     @CommandLine.Option(names = {"-p", "--include-whitespace-padding"},
             defaultValue = "false",
             description = "Pad subfields with whitespace in line format output (MARC21 only). Defaults to ${DEFAULT_VALUE})"
@@ -122,12 +127,12 @@ public class MarcConversionApp implements Runnable {
         final MarcFormatDeducer marcFormatDeducer = new MarcFormatDeducer(PUSHBACK_BUFFER_SIZE);
 
         Charset sampleEncoding = encoding;
-        if (encoding instanceof DanMarc2Charset) {
+        //if (encoding instanceof DanMarc2Charset) {
             // Don't complicate the format deduction
             // by introducing the DanMarc2 charset
             // into the mix.
             sampleEncoding = StandardCharsets.ISO_8859_1;
-        }
+        //}
         final MarcFormatDeducer.FORMAT format =
                 marcFormatDeducer.deduce(is, sampleEncoding);
 
