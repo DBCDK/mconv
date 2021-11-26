@@ -92,7 +92,6 @@
           </execution>
         </executions>
         <configuration>
-          <finalName>mconv</finalName>
           <appendAssemblyId>false</appendAssemblyId>
           <archive>
             <manifest>
