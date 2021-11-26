@@ -94,7 +94,7 @@ public class MarcConversionApp implements Runnable {
     }
 
 
-    static int runWith(String[] args) throws CliException {
+    static int runWith(String... args) throws CliException {
         CommandLine cli=new CommandLine( new MarcConversionApp()).setCaseInsensitiveEnumValuesAllowed(true);
         return cli.execute( args );
     }
@@ -127,12 +127,12 @@ public class MarcConversionApp implements Runnable {
         final MarcFormatDeducer marcFormatDeducer = new MarcFormatDeducer(PUSHBACK_BUFFER_SIZE);
 
         Charset sampleEncoding = encoding;
-        //if (encoding instanceof DanMarc2Charset) {
+        if (!(encoding.name().equals("UTF-8"))) {
             // Don't complicate the format deduction
             // by introducing the DanMarc2 charset
             // into the mix.
             sampleEncoding = StandardCharsets.ISO_8859_1;
-        //}
+        }
         final MarcFormatDeducer.FORMAT format =
                 marcFormatDeducer.deduce(is, sampleEncoding);
 

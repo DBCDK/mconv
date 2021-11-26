@@ -48,7 +48,7 @@ public class MarcFormatDeducer {
     public FORMAT deduce(PushbackInputStream is, Charset encoding) {
         final byte[] buffer = new byte[prologSize];
         try {
-            final int bytesRead = is.read(buffer, 0, prologSize);
+            final int bytesRead = blocking_read(is,buffer);
             if (bytesRead > 0) {
                 final String prolog = safeToString(buffer, encoding);
                 try {
@@ -109,4 +109,20 @@ public class MarcFormatDeducer {
     private boolean isLineFormat(String string) {
         return VALID_LINE_FORMAT.matcher(string).find();
     }
+
+    static int blocking_read(PushbackInputStream is, byte[] buffer) throws IOException {
+        int expected=buffer.length;
+        int all_ready_read=is.read(buffer);
+        if( all_ready_read == -1) { return -1; }
+
+        while( all_ready_read < expected ) {
+            int missing=expected - all_ready_read;
+            int read_result=is.read( buffer, all_ready_read, missing );
+            if( read_result == -1 ) return all_ready_read;
+            all_ready_read+=read_result;
+        }
+
+        return all_ready_read;
+    }
+
 }
