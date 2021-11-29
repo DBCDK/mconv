@@ -20,6 +20,7 @@ import dk.dbc.marc.writer.Iso2709MarcRecordWriter;
 import dk.dbc.marc.writer.LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriter;
 import dk.dbc.marc.writer.MarcWriterException;
+import picocli.CommandLine;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,37 +28,90 @@ import java.io.IOException;
 import java.io.PushbackInputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-public class MarcConversionApp {
+import static dk.dbc.marc.RecordFormat.LINE;
+import static dk.dbc.marc.RecordFormat.LINE_CONCAT;
+
+@CommandLine.Command(name = "mconv ", version = "1.0",
+        description = "Reads in and parses MARC records from file\n" +
+                       "and supports output in both MARC21 or DANMARC2 line-format and ISO2709",
+        mixinStandardHelpOptions = true)
+public class MarcConversionApp implements Runnable {
     private static final int PUSHBACK_BUFFER_SIZE = 1000;
 
+    @CommandLine.Parameters(
+            paramLabel = "inputfile",
+            defaultValue = "-",
+            description="Input file or standard input if given as a dash (-)" )
+    File inputFile;
+
+    @CommandLine.Option(
+            names = { "-f", "--format"},
+            defaultValue = "LINE_CONCAT",
+            description = "Output format ${COMPLETION-CANDIDATES}\ndefaults to  LINE_CONCAT.")
+    RecordFormat outputFormat=LINE_CONCAT;
+
+    @CommandLine.Option(
+            names = {"-i", "--input-encoding"},
+            defaultValue = "UTF8",
+            description = "Character set of the input MARC record(s)\neg. LATIN-1, DANMARC2, MARC-8, UTF-8, and more.\nDefaults to UTF-8)"
+    )
+    Charset inputEncoding;
+
+    @CommandLine.Option(
+            names = {"-o", "--output-encoding"},
+            defaultValue = "UTF8",
+            description = "Character set of the output MARC record(s)\neg. LATIN-1, DANMARC2, MARC-8, UTF-8, and more.\nDefaults to UTF-8)"
+    )
+    Charset outputEncoding = StandardCharsets.UTF_8;
+
+    @CommandLine.Option(names = {"-l", "--include-leader"},
+            defaultValue = "false",
+            description = "Include leader in line format output (MARC21 only).\nDefaults to false)"
+    )
+    Boolean includeLeader = Boolean.FALSE;
+
+    @CommandLine.Option(names = {"-p", "--include-whitespace-padding"},
+            defaultValue = "false",
+            description = "Pad subfields with whitespace in line format output (MARC21 only). Defaults to ${DEFAULT_VALUE})"
+    )
+    Boolean includeWhitespacePadding = Boolean.FALSE;
+
+
+
+
     public static void main(String[] args) {
+        int exitCode=0;
         try {
-            runWith(args);
-        } catch (CliException e) {
-            System.exit(1);
+            exitCode=runWith(args);
         } catch (RuntimeException e) {
             e.printStackTrace();
             System.exit(1);
         }
-        System.exit(0);
+        System.exit(exitCode);
     }
 
-    static void runWith(String[] args) throws CliException {
-        final Cli cli = new Cli(args);
-        final File in = cli.args.get("IN");
+
+    static int runWith(String... args) throws CliException {
+        CommandLine cli=new CommandLine( new MarcConversionApp()).setCaseInsensitiveEnumValuesAllowed(true);
+        return cli.execute( args );
+    }
+
+    @Override
+    public void run() {
+
+        final File in = inputFile;
         try (PushbackInputStream is = "-".equals(in.getName())
                 ? new PushbackInputStream(System.in, PUSHBACK_BUFFER_SIZE)
-                : new PushbackInputStream(new FileInputStream((File) cli.args.get("IN")), PUSHBACK_BUFFER_SIZE)) {
-            final Charset inputEncoding = Encoding.of(cli.args.getString("input_encoding"));
-            final Charset outputEncoding = Encoding.of(cli.args.getString("output_encoding"));
-            final MarcReader marcRecordReader = getMarcReader(cli, is, inputEncoding);
+                : new PushbackInputStream(new FileInputStream( inputFile.getAbsolutePath() ), PUSHBACK_BUFFER_SIZE)) {
+            final MarcReader marcRecordReader = getMarcReader( is, inputEncoding);
             MarcRecord record = marcRecordReader.read();
             if (record == null) {
                 throw new IllegalArgumentException("Unknown input format");
             }
-            final MarcWriter marcWriter = getMarcWriter(cli, record);
+            final MarcWriter marcWriter = getMarcWriter(record);
             while (record != null) {
                 System.out.write(marcWriter.write(record, outputEncoding));
                 record = marcRecordReader.read();
@@ -69,15 +123,15 @@ public class MarcConversionApp {
         }
     }
 
-    private static MarcReader getMarcReader(Cli cli, PushbackInputStream is, Charset encoding) throws MarcReaderException {
+    private MarcReader getMarcReader(PushbackInputStream is, Charset encoding) throws MarcReaderException {
         final MarcFormatDeducer marcFormatDeducer = new MarcFormatDeducer(PUSHBACK_BUFFER_SIZE);
 
         Charset sampleEncoding = encoding;
-        if (encoding instanceof DanMarc2Charset) {
+        if (!(encoding.name().equals("UTF-8"))) {
             // Don't complicate the format deduction
             // by introducing the DanMarc2 charset
             // into the mix.
-            sampleEncoding = Encoding.of("LATIN1");
+            sampleEncoding = StandardCharsets.ISO_8859_1;
         }
         final MarcFormatDeducer.FORMAT format =
                 marcFormatDeducer.deduce(is, sampleEncoding);
@@ -92,8 +146,7 @@ public class MarcConversionApp {
         switch (format) {
             case LINE:
                 return new LineFormatReader(is, encoding)
-                        .setProperty(LineFormatReader.Property.INCLUDE_WHITESPACE_PADDING,
-                                cli.args.getBoolean("include_whitespace_padding"));
+                        .setProperty(LineFormatReader.Property.INCLUDE_WHITESPACE_PADDING, includeWhitespacePadding);
             case DANMARC2_LINE:
                 return new DanMarc2LineFormatReader(is, encoding);
             case MARCXCHANGE:
@@ -105,32 +158,31 @@ public class MarcConversionApp {
         }
     }
 
-    private static MarcWriter getMarcWriter(Cli cli, MarcRecord record) {
-        final String format = cli.args.getString("format");
-        switch (format) {
-            case "LINE": // pass-through
-            case "LINE_CONCAT":
-                return getLineFormatWriterVariant(cli, record);
-            case "ISO":
+    private MarcWriter getMarcWriter(MarcRecord record) {
+        switch (outputFormat) {
+            case LINE: // pass-through
+            case LINE_CONCAT:
+                return getLineFormatWriterVariant(record);
+            case ISO:
                 return new Iso2709MarcRecordWriter();
             default:
-                throw new IllegalStateException("Unhandled format: " + format);
+                throw new IllegalStateException("Unhandled format: Shut not happen" );
         }
     }
 
-    private static MarcWriter getLineFormatWriterVariant(Cli cli, MarcRecord record) {
-        final String format = cli.args.getString("format");
+    private MarcWriter getLineFormatWriterVariant(MarcRecord record) {
         if (isDanMarc2(record)) {
-            return format.equals("LINE") ? new DanMarc2LineFormatWriter()
+            return outputFormat == LINE ? new DanMarc2LineFormatWriter()
                     : new DanMarc2LineFormatConcatWriter();
         }
-        final LineFormatWriter lineFormatWriter = format.equals("LINE")
+        final LineFormatWriter lineFormatWriter = outputFormat == LINE
                 ? new LineFormatWriter() : new LineFormatConcatWriter();
+
         return lineFormatWriter
                 .setProperty(LineFormatWriter.Property.INCLUDE_LEADER,
-                        cli.args.getBoolean("include_leader"))
+                        includeLeader)
                 .setProperty(LineFormatWriter.Property.INCLUDE_WHITESPACE_PADDING,
-                        cli.args.getBoolean("include_whitespace_padding"));
+                        includeWhitespacePadding);
     }
 
     private static boolean isDanMarc2(MarcRecord record) {

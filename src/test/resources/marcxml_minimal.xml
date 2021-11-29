@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XML Spy v4.3 U (http://www.xmlspy.com) by Morgan Cundiff (Library of Congress) -->
+<marc:collection xmlns:marc="http://www.loc.gov/MARC21/slim" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/MARC21/slim
+http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd">
+	<marc:record>
+		<marc:leader>00925njm  22002777a 4500</marc:leader>
+		<marc:controlfield tag="001">control1</marc:controlfield>
+		<marc:datafield tag="100" ind1=" " ind2=" ">
+			<marc:subfield code="a">code-a</marc:subfield>
+			<marc:subfield code="b">code-b</marc:subfield>
+		</marc:datafield>
+    </marc:record>
+</marc:collection>

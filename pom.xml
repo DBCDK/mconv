@@ -20,7 +20,6 @@
   </parent>
 
   <properties>
-    <argparse4j.version>0.7.0</argparse4j.version>
     <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
   </properties>
 
@@ -41,9 +40,9 @@
 
   <dependencies>
     <dependency>
-      <groupId>net.sourceforge.argparse4j</groupId>
-      <artifactId>argparse4j</artifactId>
-      <version>${argparse4j.version}</version>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
+      <version>4.6.1</version>
     </dependency>
     <dependency>
       <groupId>dk.dbc</groupId>
@@ -62,6 +61,12 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-nop</artifactId>
       <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.stefanbirkner</groupId>
+      <artifactId>system-lambda</artifactId>
+      <version>1.2.0</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -87,7 +92,6 @@
           </execution>
         </executions>
         <configuration>
-          <finalName>mconv</finalName>
           <appendAssemblyId>false</appendAssemblyId>
           <archive>
             <manifest>
