@@ -55,6 +55,9 @@ pipeline {
                     status += sh returnStatus: true, script:  """
                           mvn -B -Dmaven.repo.local=\$WORKSPACE/.repo -Pnative verify
                     """
+
+                    archiveArtifacts artifacts: 'target/mconv', fingerprint: true
+
                     if (status != 0) {
                         error("build failed")
                     }
