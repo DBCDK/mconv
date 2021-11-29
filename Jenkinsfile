@@ -53,7 +53,7 @@ pipeline {
                     publishIssues issues:[spotbugs], unstableTotalAll:1
 
                     status += sh returnStatus: true, script:  """
-                          mvn -B -Dmaven.repo.local=\$WORKSPACE/.repo mvn -Pnative verify
+                          mvn -B -Dmaven.repo.local=\$WORKSPACE/.repo -Pnative verify
                     """
                     if (status != 0) {
                         error("build failed")
