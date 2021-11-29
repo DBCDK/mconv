@@ -63,7 +63,7 @@ pipeline {
                 branch "master"
             }
             steps {
-                sh "mvn jar:jar deploy:deploy"
+                sh "mvn verify deploy:deploy"
             }
         }
     }
