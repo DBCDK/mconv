@@ -1,6 +1,6 @@
 #!groovy
 
-def workerNode = "devel10"
+def workerNode = "devel11"
 def teamEmail = 'metascrum@dbc.dk'
 def teamSlack = 'meta-notifications'
 
