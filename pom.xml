@@ -21,11 +21,11 @@
 
   <properties>
     <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
-    <picocli.version>4.6.1</picocli.version>
+    <picocli.version>4.6.2</picocli.version>
     <slf4j.version>1.7.30</slf4j.version>
     <native.maven.plugin.version>0.9.7.1</native.maven.plugin.version>
     <junit5.version>5.8.2</junit5.version>
-
+    <slf4j.version>1.7.32</slf4j.version>
 </properties>
 
   <repositories>
