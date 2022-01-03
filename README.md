@@ -18,7 +18,7 @@ mconv --selfupdate
 $ mconv -h
 usage: mconv --version
 usage: mconv --selfupdate
-usage: mconv [-h] [-f {LINE,LINE_CONCAT,ISO}] [-i INPUT_ENCODING] [-o OUTPUT_ENCODING] [-l] [-p] IN
+usage: mconv [-h] [-f {LINE,LINE_CONCAT,ISO,JSONL}] [-i INPUT_ENCODING] [-o OUTPUT_ENCODING] [-l] [-p] IN
 
 Reads in and parses MARC records from file
 and supports output in both MARC21 or DANMARC2 line-format and ISO2709
@@ -28,7 +28,7 @@ positional arguments:
 
 optional arguments:
   -h, --help             show this help message and exit
-  -f {LINE,LINE_CONCAT,ISO}, --format {LINE,LINE_CONCAT,ISO}
+  -f {LINE,LINE_CONCAT,ISO,JSONL}, --format {LINE,LINE_CONCAT,ISO,JSONL}
                          Output format.
                          Defaults to LINE_CONCAT
   -i INPUT_ENCODING, --input-encoding INPUT_ENCODING

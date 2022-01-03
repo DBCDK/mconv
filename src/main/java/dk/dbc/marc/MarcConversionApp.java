@@ -17,6 +17,7 @@ import dk.dbc.marc.reader.MarcXchangeV1Reader;
 import dk.dbc.marc.reader.MarcXmlReader;
 import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
 import dk.dbc.marc.writer.Iso2709MarcRecordWriter;
+import dk.dbc.marc.writer.JsonLineWriter;
 import dk.dbc.marc.writer.LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriter;
 import dk.dbc.marc.writer.MarcWriterException;
@@ -165,6 +166,8 @@ public class MarcConversionApp implements Runnable {
                 return getLineFormatWriterVariant(record);
             case ISO:
                 return new Iso2709MarcRecordWriter();
+            case JSONL:
+                return new JsonLineWriter();
             default:
                 throw new IllegalStateException("Unhandled format: Shut not happen" );
         }
