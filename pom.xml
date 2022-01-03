@@ -21,7 +21,12 @@
 
   <properties>
     <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
-  </properties>
+    <picocli.version>4.6.2</picocli.version>
+    <slf4j.version>1.7.30</slf4j.version>
+    <native.maven.plugin.version>0.9.7.1</native.maven.plugin.version>
+    <junit5.version>5.8.2</junit5.version>
+    <slf4j.version>1.7.32</slf4j.version>
+</properties>
 
   <repositories>
     <repository>
@@ -42,7 +47,7 @@
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
-      <version>4.6.1</version>
+      <version>${picocli.version}</version>
     </dependency>
     <dependency>
       <groupId>dk.dbc</groupId>
@@ -72,6 +77,23 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>info.picocli</groupId>
+              <artifactId>picocli-codegen</artifactId>
+              <version>${picocli.version}</version>
+            </path>
+          </annotationProcessorPaths>
+          <compilerArgs>
+            <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
@@ -116,4 +138,78 @@
 
     </plugins>
   </build>
+
+    <profiles>
+    <profile>
+      <id>native</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+            <version>${native.maven.plugin.version}</version>
+            <extensions>true</extensions>
+            <executions>
+              <execution>
+                <id>build-native</id>
+                <goals>
+                  <goal>build</goal>
+                </goals>
+                <phase>package</phase>
+              </execution>
+              <execution>
+                <id>test-native</id>
+                <goals>
+                  <goal>test</goal>
+                </goals>
+                <phase>test</phase>
+              </execution>
+            </executions>
+            <configuration>
+              <imageName>mconv</imageName>
+              <mainClass>dk.dbc.marc.MarcConversionApp</mainClass>
+              <buildArgs>
+                <buildArg>--no-fallback</buildArg>
+                <!-- Allow the image to build with an incomplete class path.
+                     Report type resolution errors at runtime when they are
+                     accessed the first time, instead of during the image build. -->
+                <buildArg>--allow-incomplete-classpath</buildArg>
+                <buildArg>-H:ReflectionConfigurationFiles=${project.basedir}/reflectionconfig.json</buildArg>
+                <buildArg>-H:ResourceConfigurationFiles=${project.basedir}/resource-config.json</buildArg>
+                <buildArg>-H:+ReportExceptionStackTraces</buildArg>
+                <buildArg>--initialize-at-build-time=org.slf4j.LoggerFactory</buildArg>
+                <buildArg>--initialize-at-build-time=ch.qos.logback.classic.Logger</buildArg>
+                <buildArg>--initialize-at-build-time=dk.dbc.marc.CharsetProvider</buildArg>
+                <buildArg>--initialize-at-build-time=dk.dbc.marc.DanMarc2CharsetConfiguration</buildArg>
+                <buildArg>--initialize-at-build-time=dk.dbc.marc.DanMarc2Charset$1</buildArg>
+                <buildArg>--initialize-at-build-time=dk.dbc.marc.Marc8DecodeCodeTable</buildArg>
+                <buildArg>--initialize-at-build-time=dk.dbc.marc.Marc8DecodeCodeTable$1</buildArg>
+                <buildArg>--initialize-at-build-time=dk.dbc.marc.Marc8EncodeCodeTable</buildArg>
+                <buildArg>--initialize-at-build-time=dk.dbc.marc.Marc8EncodeCodeTable$1</buildArg>
+                <buildArg>-H:+AddAllCharsets</buildArg>
+              </buildArgs>
+            </configuration>
+          </plugin>
+          <!--<plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <version>3.0.0-M5</version>
+            <configuration>
+              <groups>native</groups>
+            </configuration>
+            <executions>
+              <execution>
+                <id>run-native-tests</id>
+                <phase>integration-test</phase>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin> -->
+        </plugins>
+      </build>
+    </profile>
+    </profiles>
 </project>

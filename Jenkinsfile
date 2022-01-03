@@ -1,6 +1,6 @@
 #!groovy
 
-def workerNode = "devel10"
+def workerNode = "devel11"
 def teamEmail = 'metascrum@dbc.dk'
 def teamSlack = 'meta-notifications'
 
@@ -51,6 +51,12 @@ pipeline {
 
                     def spotbugs = scanForIssues tool: [$class: 'SpotBugs'], pattern: '**/target/spotbugsXml.xml'
                     publishIssues issues:[spotbugs], unstableTotalAll:1
+
+                    status += sh returnStatus: true, script:  """
+                          mvn -B -Dmaven.repo.local=\$WORKSPACE/.repo -Pnative verify
+                    """
+
+                    archiveArtifacts artifacts: 'target/mconv', fingerprint: true
 
                     if (status != 0) {
                         error("build failed")

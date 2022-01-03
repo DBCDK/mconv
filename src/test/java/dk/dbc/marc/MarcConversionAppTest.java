@@ -98,7 +98,7 @@ class MarcConversionAppTest {
     @Test void marc8Input() throws Exception {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith("src/test/resources/record_with_utf8_in_marc8.iso", "-i", "marc8", "--format=line"));
 
-        assertThat( capturedStdout, containsString("xαx"));
+        assertThat( capturedStdout, is("010 00 *axαx\n$\n"));
     }
 
     @Test void danmarc2isoOutput() throws Exception {
@@ -111,7 +111,7 @@ class MarcConversionAppTest {
     void danmarc2Input() throws Exception {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith("src/test/resources/record_with_utf8_in_danmarc2.iso", "-i", "danmarc2", "--format=line"));
 
-        assertThat( capturedStdout, containsString("xαx"));
+        assertThat( capturedStdout, is("010 00 *axαx\n$\n"));
     }
 
     @Test
