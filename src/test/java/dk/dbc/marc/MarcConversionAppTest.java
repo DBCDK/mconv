@@ -59,6 +59,27 @@ class MarcConversionAppTest {
     }
 
     @Test
+    void marcXmlJsonLine() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith("src/test/resources/marcxml_minimal.xml", "--format=jsonl"));
+
+        assertThat(capturedStdout, is(
+                "{" +
+                    "\"leader\":[\"0\",\"0\",\"9\",\"2\",\"5\",\"n\",\"j\",\"m\",\" \",\" \",\"2\",\"2\",\"0\",\"0\",\"2\",\"7\",\"7\",\"7\",\"a\",\" \",\"4\",\"5\",\"0\",\"0\"]," +
+                    "\"fields\":[" +
+                        "{\"name\":\"001\",\"value\":\"control1\"}," +
+                        "{\"name\":\"100\",\"indicator\":[\" \",\" \"]," +
+                            "\"subfields\":[" +
+                                "{\"name\":\"a\",\"value\":\"code-a\"}," +
+                                "{\"name\":\"b\",\"value\":\"code-b\"}" +
+                            "]" +
+                        "}" +
+                    "]" +
+                "}\n"
+        ));
+    }
+
+
+    @Test
     void marcMmlLineWhiteSpaceShort() throws Exception {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith("src/test/resources/marcxml_minimal.xml", "-p","--format=LINE"));
 
