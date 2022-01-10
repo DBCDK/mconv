@@ -22,6 +22,14 @@ class MarcFormatDeducerTest {
     final MarcFormatDeducer deducer = new MarcFormatDeducer(PUSHBACK_BUFFER_SIZE);
 
     @Test
+    void deduceJsonl() {
+        final MarcFormatDeducer.FORMAT format = deducer.deduce(
+                fromResource("src/test/resources/marc.jsonl", PUSHBACK_BUFFER_SIZE),
+                StandardCharsets.UTF_8);
+        assertThat(format, is(MarcFormatDeducer.FORMAT.JSONL));
+    }
+
+    @Test
     void deduceMarcxchange() {
         final MarcFormatDeducer.FORMAT format = deducer.deduce(
                 fromResource("src/test/resources/marc_collection.xml", PUSHBACK_BUFFER_SIZE),

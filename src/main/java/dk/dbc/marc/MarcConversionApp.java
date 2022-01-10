@@ -10,6 +10,7 @@ import dk.dbc.marc.binding.Field;
 import dk.dbc.marc.binding.MarcRecord;
 import dk.dbc.marc.reader.DanMarc2LineFormatReader;
 import dk.dbc.marc.reader.Iso2709Reader;
+import dk.dbc.marc.reader.JsonLineReader;
 import dk.dbc.marc.reader.LineFormatReader;
 import dk.dbc.marc.reader.MarcReader;
 import dk.dbc.marc.reader.MarcReaderException;
@@ -21,6 +22,7 @@ import dk.dbc.marc.writer.JsonLineWriter;
 import dk.dbc.marc.writer.LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriter;
 import dk.dbc.marc.writer.MarcWriterException;
+import dk.dbc.marc.writer.MarcXchangeV1Writer;
 import picocli.CommandLine;
 
 import java.io.File;
@@ -30,6 +32,7 @@ import java.io.PushbackInputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 import static dk.dbc.marc.RecordFormat.LINE;
@@ -51,36 +54,40 @@ public class MarcConversionApp implements Runnable {
     @CommandLine.Option(
             names = { "-f", "--format"},
             defaultValue = "LINE_CONCAT",
-            description = "Output format ${COMPLETION-CANDIDATES}\ndefaults to  LINE_CONCAT.")
+            description = "Output format ${COMPLETION-CANDIDATES}\ndefaults to ${DEFAULT-VALUE}.")
     RecordFormat outputFormat=LINE_CONCAT;
 
     @CommandLine.Option(
             names = {"-i", "--input-encoding"},
-            defaultValue = "UTF8",
-            description = "Character set of the input MARC record(s)\neg. LATIN-1, DANMARC2, MARC-8, UTF-8, and more.\nDefaults to UTF-8)"
+            defaultValue = "UTF-8",
+            description = "Character set of the input MARC record(s)\neg. LATIN-1, DANMARC2, MARC-8, UTF-8, and more.\nDefaults to ${DEFAULT-VALUE}."
     )
     Charset inputEncoding;
 
     @CommandLine.Option(
             names = {"-o", "--output-encoding"},
-            defaultValue = "UTF8",
-            description = "Character set of the output MARC record(s)\neg. LATIN-1, DANMARC2, MARC-8, UTF-8, and more.\nDefaults to UTF-8)"
+            defaultValue = "UTF-8",
+            description = "Character set of the output MARC record(s)\neg. LATIN-1, DANMARC2, MARC-8, UTF-8, and more.\nDefaults to ${DEFAULT-VALUE}."
     )
     Charset outputEncoding = StandardCharsets.UTF_8;
 
     @CommandLine.Option(names = {"-l", "--include-leader"},
             defaultValue = "false",
-            description = "Include leader in line format output (MARC21 only).\nDefaults to false)"
+            description = "Include leader in line format output (MARC21 only).\nDefaults to ${DEFAULT-VALUE}."
     )
     Boolean includeLeader = Boolean.FALSE;
 
     @CommandLine.Option(names = {"-p", "--include-whitespace-padding"},
             defaultValue = "false",
-            description = "Pad subfields with whitespace in line format output (MARC21 only). Defaults to ${DEFAULT_VALUE})"
+            description = "Pad subfields with whitespace in line format output (MARC21 only).\nDefaults to ${DEFAULT-VALUE}."
     )
     Boolean includeWhitespacePadding = Boolean.FALSE;
 
-
+    @CommandLine.Option(names = {"-c", "--as-collection"},
+            defaultValue = "false",
+            description = "Output all input records in the same collection. Requires that the output format has support for collections.\nDefaults to ${DEFAULT-VALUE}."
+    )
+    Boolean asCollection = Boolean.FALSE;
 
 
     public static void main(String[] args) {
@@ -113,9 +120,26 @@ public class MarcConversionApp implements Runnable {
                 throw new IllegalArgumentException("Unknown input format");
             }
             final MarcWriter marcWriter = getMarcWriter(record);
+
+            List<MarcRecord> recordBuffer = null;
+            if (asCollection) {
+                if (!marcWriter.canOutputCollection()) {
+                    throw new IllegalArgumentException("Output format " + outputFormat + " does not support collections");
+                }
+                recordBuffer = new ArrayList<>();
+            }
+
             while (record != null) {
-                System.out.write(marcWriter.write(record, outputEncoding));
+                if (asCollection) {
+                    recordBuffer.add(record);
+                } else {
+                    System.out.write(marcWriter.write(record, outputEncoding));
+                }
                 record = marcRecordReader.read();
+            }
+
+            if (recordBuffer != null) {
+                System.out.write(marcWriter.writeCollection(recordBuffer, outputEncoding));
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -145,6 +169,8 @@ public class MarcConversionApp implements Runnable {
         }
 
         switch (format) {
+            case JSONL:
+                return new JsonLineReader(is, encoding);
             case LINE:
                 return new LineFormatReader(is, encoding)
                         .setProperty(LineFormatReader.Property.INCLUDE_WHITESPACE_PADDING, includeWhitespacePadding);
@@ -168,6 +194,8 @@ public class MarcConversionApp implements Runnable {
                 return new Iso2709MarcRecordWriter();
             case JSONL:
                 return new JsonLineWriter();
+            case MARCXCHANGE:
+                return getMarcXchangeWriter();
             default:
                 throw new IllegalStateException("Unhandled format: Shut not happen" );
         }
@@ -186,6 +214,12 @@ public class MarcConversionApp implements Runnable {
                         includeLeader)
                 .setProperty(LineFormatWriter.Property.INCLUDE_WHITESPACE_PADDING,
                         includeWhitespacePadding);
+    }
+
+    private MarcWriter getMarcXchangeWriter() {
+        final MarcXchangeV1Writer marcXchangeV1Writer = new MarcXchangeV1Writer();
+        marcXchangeV1Writer.setProperty(MarcXchangeV1Writer.Property.ADD_XML_DECLARATION, false);
+        return marcXchangeV1Writer;
     }
 
     private static boolean isDanMarc2(MarcRecord record) {
