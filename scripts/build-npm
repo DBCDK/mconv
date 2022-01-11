@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+BUILD_NUMBER=${BUILD_NUMBER:-0}
+VERSION=1.2.${BUILD_NUMBER}
+
+function finally {
+  for f in *.tgz; do
+    mv -- "$f" "../${f%-$VERSION.tgz}-latest.tgz"
+  done
+}
+
+trap finally EXIT
+
+function die () {
+  local message=$1
+  [ -z "$message" ] && message="Died"
+  echo "$message (at ${BASH_SOURCE[1]}:${FUNCNAME[1]} line ${BASH_LINENO[0]}.)" >&2
+  exit 1
+}
+
+npm_dist=target/npm-dist
+
+npm install || die "npm install failed"
+rm -rf "${npm_dist}" || die
+mkdir "${npm_dist}" || die
+for path in "$@"
+do
+  cp -r "${path}" "${npm_dist}" || die
+done
+cd "${npm_dist}" || die
+if [[ ${BUILD_NUMBER} -ne 0 ]]; then
+  npm version "${VERSION}" || die "npm version failed"
+fi
+npm pack || die "npm pack failed"
