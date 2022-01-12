@@ -64,6 +64,23 @@ pipeline {
                 }
             }
         }
+        stage("build-npm") {
+            agent {
+                docker {
+                    image 'docker.dbc.dk/dbc-node'
+                    args '--user isworker'
+                    alwaysPull true
+                    reuseNode true
+                }
+            }
+            steps {
+                sh """
+                    scripts/build-npm package.json target/mconv
+                """
+                archiveArtifacts artifacts: '**/target/*.tgz', fingerprint: true
+            }
+
+        }
         stage("deploy") {
             when {
                 branch "master"
