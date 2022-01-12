@@ -15,7 +15,6 @@ import java.nio.file.Paths;
 
 import static com.github.stefanbirkner.systemlambda.SystemLambda.tapSystemOut;
 import static com.github.stefanbirkner.systemlambda.SystemLambda.withTextFromSystemIn;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
@@ -56,6 +55,42 @@ class MarcConversionAppTest {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith("src/test/resources/marcxml_minimal.xml", "--format=LINE"));
 
         assertThat(capturedStdout, is("001 control1\n100    $acode-a$bcode-b\n\n"));
+    }
+
+    @Test
+    void JsonlToMarcXchange() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith("src/test/resources/marc.jsonl", "--format=MARCXCHANGE"));
+
+        assertThat(capturedStdout, is(
+                "<record xmlns='info:lc/xmlns/marcxchange-v1' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd'>" +
+                        "<datafield ind1='0' ind2='0' tag='001'>" +
+                          "<subfield code='a'>30769430</subfield>" +
+                        "</datafield>" +
+                      "</record>" +
+                      "<record xmlns='info:lc/xmlns/marcxchange-v1' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd'>" +
+                        "<datafield ind1='0' ind2='0' tag='001'>" +
+                          "<subfield code='a'>30769431</subfield>" +
+                        "</datafield>" +
+                      "</record>"));
+    }
+
+    @Test
+    void JsonlToMarcXchangeCollection() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith("src/test/resources/marc.jsonl", "-c", "--format=MARCXCHANGE"));
+
+        assertThat(capturedStdout, is(
+                "<collection xmlns='info:lc/xmlns/marcxchange-v1' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd'>" +
+                        "<record>" +
+                          "<datafield ind1='0' ind2='0' tag='001'>" +
+                            "<subfield code='a'>30769430</subfield>" +
+                          "</datafield>" +
+                        "</record>" +
+                        "<record>" +
+                          "<datafield ind1='0' ind2='0' tag='001'>" +
+                            "<subfield code='a'>30769431</subfield>" +
+                          "</datafield>" +
+                        "</record>" +
+                      "</collection>"));
     }
 
     @Test

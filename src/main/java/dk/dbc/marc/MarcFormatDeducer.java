@@ -22,6 +22,7 @@ public class MarcFormatDeducer {
 
     public enum FORMAT {
         DANMARC2_LINE,
+        JSONL,
         LINE,
         MARCXCHANGE,
         MARCXML,
@@ -52,7 +53,9 @@ public class MarcFormatDeducer {
             if (bytesRead > 0) {
                 final String prolog = safeToString(buffer, encoding);
                 try {
-                    if (isMarcxchange(prolog)) {
+                    if (isJson(prolog)) {
+                        return FORMAT.JSONL;
+                    } else if (isMarcxchange(prolog)) {
                         return FORMAT.MARCXCHANGE;
                     } else if (isMarcXml(prolog)) {
                         return FORMAT.MARCXML;
@@ -92,6 +95,10 @@ public class MarcFormatDeducer {
             }
         }
         return "";
+    }
+
+    private boolean isJson(String string) {
+        return string.startsWith("{") || string.startsWith("[");
     }
 
     private boolean isMarcxchange(String string) {
