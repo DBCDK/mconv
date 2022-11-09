@@ -1,4 +1,6 @@
 #!groovy
+@Library('metascrum')
+import dk.dbc.metascrum.jenkins.Maven
 
 def workerNode = "devel11"
 def teamEmail = 'metascrum@dbc.dk'
@@ -29,38 +31,7 @@ pipeline {
         stage("build") {
 			steps {
                 script {
-                    def status = sh returnStatus: true, script:  """
-                        rm -rf \$WORKSPACE/.repo
-                        mvn -B -Dmaven.repo.local=\$WORKSPACE/.repo dependency:resolve dependency:resolve-plugins >/dev/null || true
-                        mvn -B -Dmaven.repo.local=\$WORKSPACE/.repo clean
-                    """
-
-                    // We want code-coverage and pmd/spotbugs even if unittests fails
-                    status += sh returnStatus: true, script:  """
-                        mvn -B -Dmaven.repo.local=\$WORKSPACE/.repo verify pmd:pmd pmd:cpd spotbugs:spotbugs javadoc:aggregate
-                    """
-
-                    junit testResults: '**/target/*-reports/TEST-*.xml'
-
-                    def java = scanForIssues tool: [$class: 'Java']
-                    def javadoc = scanForIssues tool: [$class: 'JavaDoc']
-                    publishIssues issues:[java, javadoc], unstableTotalAll:1
-
-                    def pmd = scanForIssues tool: [$class: 'Pmd'], pattern: '**/target/pmd.xml'
-                    publishIssues issues:[pmd], unstableTotalAll:1
-
-                    def spotbugs = scanForIssues tool: [$class: 'SpotBugs'], pattern: '**/target/spotbugsXml.xml'
-                    publishIssues issues:[spotbugs], unstableTotalAll:1
-
-                    status += sh returnStatus: true, script:  """
-                          mvn -B -Dmaven.repo.local=\$WORKSPACE/.repo -Pnative verify
-                    """
-
-                    archiveArtifacts artifacts: 'target/mconv', fingerprint: true
-
-                    if (status != 0) {
-                        error("build failed")
-                    }
+                    Maven.verify(this, profiles: "native")
                 }
             }
         }
@@ -75,6 +46,7 @@ pipeline {
             }
             steps {
                 sh """
+                    cd mconv-exec
                     scripts/build-npm package.json target/mconv
                 """
                 archiveArtifacts artifacts: '**/target/*.tgz', fingerprint: true
@@ -86,7 +58,9 @@ pipeline {
                 branch "master"
             }
             steps {
-                sh "mvn verify deploy:deploy"
+                script {
+                    Maven.deploy(this)
+                }
             }
         }
     }

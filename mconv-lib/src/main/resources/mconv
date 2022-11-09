@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+#
+# Copyright Dansk Bibliotekscenter a/s. Licensed under GPLv3
+# See license text in LICENSE.md
+#
+
+mconv_home="$HOME/.mconv"
+mconv_archive="${mconv_home}/archive"
+mconv_bin="${mconv_home}/bin"
+mconv_url=http://mavenrepo.dbc.dk/content/repositories/releases/dk/dbc/mconv
+
+function get_current_version {
+    local current_version
+    if [ -f ${mconv_home}/version ]; then
+        current_version=`cat ${mconv_home}/version`
+    else
+        current_version=0
+    fi
+    echo ${current_version}
+}
+
+function get_latest_version {
+    local latest_version=`
+        curl -s "${mconv_url}/maven-metadata.xml" | \
+        grep "<release>.*</release>" | \
+        sed -e "s#\(.*\)\(<release>\)\(.*\)\(</release>\)\(.*\)#\3#g"`
+    echo ${latest_version}
+}
+
+function install {
+    if [ -z $(which curl) ]; then
+        echo "curl not found."
+        echo ""
+        echo "======================================================================================================"
+        echo " Please install curl on your system using your favourite package manager."
+        echo ""
+        echo " Restart after installing curl."
+        echo "======================================================================================================"
+        echo ""
+        exit 1
+    fi
+
+    if [ -z $(which unzip) ]; then
+        echo "unzip not found."
+        echo ""
+        echo "======================================================================================================"
+        echo " Please install unzip on your system using your favourite package manager."
+        echo ""
+        echo " Restart after installing unzip."
+        echo "======================================================================================================"
+        echo ""
+        exit 1
+    fi
+
+    if [ -z $(which java) ]; then
+        echo "java not found."
+        echo ""
+        echo "======================================================================================================"
+        echo " Please install java on your system using your favourite package manager."
+        echo ""
+        echo " Restart after installing java."
+        echo "======================================================================================================"
+        echo ""
+        exit 1
+    fi
+
+    mkdir -pv "$mconv_archive"
+    mkdir -pv "$mconv_bin"
+
+    local current_version=`get_current_version`
+    local latest_version=`get_latest_version`
+
+    if [ "$current_version" != "$latest_version" ]; then
+        echo "Installing version ${latest_version}"
+        curl -sL ${mconv_url}/${latest_version}/mconv-${latest_version}.jar -o ${mconv_archive}/mconv-${latest_version}.jar
+        if [ $? -eq 0 ]; then
+            [ -e ${mconv_archive}/mconv-current.jar ] && rm ${mconv_archive}/mconv-current.jar
+            ln -s ${mconv_archive}/mconv-${latest_version}.jar ${mconv_archive}/mconv-current.jar
+            unzip -o ${mconv_archive}/mconv-current.jar mconv -d ${mconv_bin}
+            chmod a+x ${mconv_bin}/mconv
+            echo ${latest_version} > ${mconv_home}/version
+        fi
+
+        if [ ! -f ~/.bash_aliases ]; then
+            touch ~/.bash_aliases
+        fi
+
+        grep "mconv=~/.mconv/bin/mconv" ~/.bash_aliases ||
+            echo -e "\nalias mconv=~/.mconv/bin/mconv" >> ~/.bash_aliases ; . ~/.bash_aliases
+    else
+        echo "Already at latest version ${latest_version}"
+    fi
+}
+
+function selfupdate {
+    local current_version=`get_current_version`
+    local latest_version=`get_latest_version`
+    if [ "$current_version" != "$latest_version" ]; then
+        curl -sL ${mconv_url}/${latest_version}/mconv-${latest_version}.jar -o /tmp/mconv-${latest_version}.jar
+        unzip -qo /tmp/mconv-${latest_version}.jar mconv -d /tmp
+        bash /tmp/mconv --install
+    else
+        echo "Already at latest version ${latest_version}"
+    fi
+}
+
+function version {
+    local current_version=`get_current_version`
+    local latest_version=`get_latest_version`
+    echo ${current_version}
+    if [ "$current_version" != "$latest_version" ]; then
+        echo "A new version ${latest_version} is available, update with 'mconv --selfupdate'"
+    fi
+}
+
+case "$1" in
+    --install)
+    install
+    ;;
+    --version)
+    version
+    ;;
+    -h)
+    echo "usage: mconv --version"
+    echo "usage: mconv --selfupdate"
+    java -jar ${mconv_archive}/mconv-current.jar -h
+    ;;
+    --selfupdate)
+    selfupdate
+    ;;
+    *)
+    java -jar ${mconv_archive}/mconv-current.jar "$@"
+    ;;
+esac
