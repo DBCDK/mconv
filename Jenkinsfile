@@ -32,6 +32,7 @@ pipeline {
 			steps {
                 script {
                     Maven.verify(this, true, "native")
+                    archiveArtifacts artifacts: 'target/mconv', fingerprint: true
                 }
             }
         }
