@@ -31,7 +31,7 @@ pipeline {
         stage("build") {
 			steps {
                 script {
-                    Maven.verify(this, profiles: "native")
+                    Maven.verify(this, true, "native")
                 }
             }
         }
