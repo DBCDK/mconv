@@ -19,7 +19,7 @@
     </parent>
 
     <properties>
-        <dbc-commons-marc.version>1.7-SNAPSHOT</dbc-commons-marc.version>
+        <dbc-commons-marc.version>1.9-SNAPSHOT</dbc-commons-marc.version>
         <maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
         <picocli.version>4.6.2</picocli.version>
         <slf4j.version>1.7.30</slf4j.version>
