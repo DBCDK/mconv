@@ -6,4 +6,6 @@ public enum RecordFormat {
     MARCXCHANGE,
     ISO,
     JSONL,
+
+    MSGPACK,
 }

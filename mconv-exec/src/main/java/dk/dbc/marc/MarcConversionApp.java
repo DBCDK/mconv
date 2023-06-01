@@ -196,9 +196,21 @@ public class MarcConversionApp implements Runnable {
                 return new JsonLineWriter();
             case MARCXCHANGE:
                 return getMarcXchangeWriter();
+            case MSGPACK:
+                return new MsgPackWriter();
             default:
                 throw new IllegalStateException("Unhandled format: Shut not happen" );
         }
+    }
+
+    private MarcWriter getMsgPackWriter() {
+        return new MarcWriter() {
+            @Override
+            public byte[] write(MarcRecord marcRecord, Charset charset) throws MarcWriterException {
+
+                return new byte[0];
+            }
+        };
     }
 
     private MarcWriter getLineFormatWriterVariant(MarcRecord record) {
