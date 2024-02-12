@@ -30,7 +30,7 @@ and supports output in both MARC21 or DANMARC2 line-format and ISO2709
   -f, --format=<outputFormat>
                          Output format LINE, LINE_CONCAT, MARCXCHANGE, ISO,
                            JSONL
-                         defaults to LINE_CONCAT.
+                         defaults to LINE.
   -h, --help             Show this help message and exit.
   -i, --input-encoding=<inputEncoding>
                          Character set of the input MARC record(s)

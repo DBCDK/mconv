@@ -53,7 +53,7 @@ public class MarcConversionApp implements Runnable {
 
     @CommandLine.Option(
             names = { "-f", "--format"},
-            defaultValue = "LINE_CONCAT",
+            defaultValue = "LINE",
             description = "Output format ${COMPLETION-CANDIDATES}\ndefaults to ${DEFAULT-VALUE}.")
     RecordFormat outputFormat=LINE_CONCAT;
 
