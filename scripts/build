@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+CI_OPTS=""
+if [ -n "$BUILD_NUMBER" ]; then
+  CI_OPTS="-B -Dmaven.repo.local=$WORKSPACE/.repo --no-transfer-progress -P native"
+fi
+mvn $CI_OPTS verify javadoc:aggregate

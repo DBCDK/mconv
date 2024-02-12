@@ -38,7 +38,7 @@ import java.util.List;
 import static dk.dbc.marc.RecordFormat.LINE;
 import static dk.dbc.marc.RecordFormat.LINE_CONCAT;
 
-@CommandLine.Command(name = "mconv ", version = "1.0",
+@CommandLine.Command(name = "mconv ", version = "2.0",
         description = "Reads in and parses MARC records from file\n" +
                        "and supports output in both MARC21 or DANMARC2 line-format and ISO2709",
         mixinStandardHelpOptions = true)
