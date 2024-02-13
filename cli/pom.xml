@@ -127,13 +127,13 @@
                                 <buildArg>-H:+ReportExceptionStackTraces</buildArg>
                                 <buildArg>--initialize-at-build-time=org.slf4j.LoggerFactory</buildArg>
                                 <buildArg>--initialize-at-build-time=ch.qos.logback.classic.Logger</buildArg>
-                                <buildArg>--initialize-at-build-time=dk.dbc.marc.CharsetProvider</buildArg>
                                 <buildArg>--initialize-at-build-time=dk.dbc.marc.DanMarc2CharsetConfiguration</buildArg>
                                 <buildArg>--initialize-at-build-time=dk.dbc.marc.DanMarc2Charset$1</buildArg>
                                 <buildArg>--initialize-at-build-time=dk.dbc.marc.Marc8DecodeCodeTable</buildArg>
                                 <buildArg>--initialize-at-build-time=dk.dbc.marc.Marc8DecodeCodeTable$1</buildArg>
                                 <buildArg>--initialize-at-build-time=dk.dbc.marc.Marc8EncodeCodeTable</buildArg>
                                 <buildArg>--initialize-at-build-time=dk.dbc.marc.Marc8EncodeCodeTable$1</buildArg>
+                                <buildArg>--initialize-at-build-time=dk.dbc.marc.MarcCharsetProvider</buildArg>
                                 <buildArg>-H:+AddAllCharsets</buildArg>
                             </buildArgs>
                         </configuration>
