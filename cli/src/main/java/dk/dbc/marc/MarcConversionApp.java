@@ -29,6 +29,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static dk.dbc.marc.RecordFormat.LINE;
 
@@ -76,16 +77,14 @@ public class MarcConversionApp implements Runnable {
     Charset outputEncoding = StandardCharsets.UTF_8;
 
     @CommandLine.Option(names = {"-l", "--include-leader"},
-            defaultValue = CommandLine.Option.NULL_VALUE,
-            description = "Include leader in line format output (MARC21 only)."
+            description = "Include leader in line format output."
     )
-    Boolean includeLeader;
+    Optional<Boolean> includeLeader;
 
     @CommandLine.Option(names = {"-p", "--include-whitespace-padding"},
-            defaultValue = CommandLine.Option.NULL_VALUE,
             description = "Pad subfields with whitespace in line format output (MARC21 only)."
     )
-    Boolean includeWhitespacePadding;
+    Optional<Boolean> includeWhitespacePadding;
 
     @CommandLine.Option(names = {"-c", "--as-collection"},
             defaultValue = "false",
@@ -207,9 +206,17 @@ public class MarcConversionApp implements Runnable {
 
     private MarcWriter getLineFormatWriterVariant(MarcRecord record) {
         if (isDanMarc2(record)) {
-            return outputFormat == LINE ? new DanMarc2LineFormatWriter()
-                    : new DanMarc2LineFormatConcatWriter();
+            final DanMarc2LineFormatWriter danMarc2LineFormatWriter = outputFormat == LINE
+                    ? new DanMarc2LineFormatWriter() : new DanMarc2LineFormatConcatWriter();
+
+            danMarc2LineFormatWriter.setProperty(DanMarc2LineFormatWriter.Property.INCLUDE_LEADER, true);
+
+            includeLeader.ifPresent(flag -> danMarc2LineFormatWriter
+                    .setProperty(DanMarc2LineFormatWriter.Property.INCLUDE_LEADER, flag));
+
+            return danMarc2LineFormatWriter;
         }
+
         final LineFormatWriter lineFormatWriter = outputFormat == LINE
                 ? new LineFormatWriter() : new LineFormatConcatWriter();
 
@@ -225,12 +232,10 @@ public class MarcConversionApp implements Runnable {
                     .setProperty(LineFormatWriter.Property.USE_STAR_SUBFIELD_MARKER, false);
         }
 
-        if (includeLeader != null) {
-            lineFormatWriter.setProperty(LineFormatWriter.Property.INCLUDE_LEADER, includeLeader);
-        }
-        if (includeWhitespacePadding != null) {
-            lineFormatWriter.setProperty(LineFormatWriter.Property.INCLUDE_WHITESPACE_PADDING, includeWhitespacePadding);
-        }
+        includeLeader.ifPresent(flag -> lineFormatWriter
+                .setProperty(LineFormatWriter.Property.INCLUDE_LEADER, flag));
+        includeWhitespacePadding.ifPresent(flag -> lineFormatWriter
+                .setProperty(LineFormatWriter.Property.INCLUDE_WHITESPACE_PADDING, flag));
 
         return lineFormatWriter;
     }

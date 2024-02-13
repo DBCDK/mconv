@@ -33,7 +33,7 @@ Parses MARC records while supporting output in various formats
                          Character set of the input MARC record(s)
                          eg. LATIN-1, DANMARC2, MARC-8, UTF-8, and more.
                          Defaults to UTF-8.
-  -l, --include-leader   Include leader in line format output (MARC21 only).
+  -l, --include-leader   Include leader in line format output.
   -m, --mode=<mode>      Output mode LAX, STRICT
                          See README.md for a detailed description of the mode
                            option.

@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.parallel.Resources.SYSTEM_OUT;
 class MarcConversionAppTest {
     @Test
     void appLineConcatOutput() throws Exception {
-        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marc_collection.xml"), "--format=LINE_CONCAT"));
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marc_collection.xml"), "--format=LINE_CONCAT", "--include-leader=false"));
 
         assertThat(capturedStdout, is(readResourceAsString("marc_collection.lin_concat")));
     }
@@ -161,7 +161,7 @@ class MarcConversionAppTest {
     @Test void marc8Input() throws Exception {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("record_with_utf8_in_marc8.iso"), "-i", "marc8", "--format=line"));
 
-        assertThat( capturedStdout, is("010 00 *axαx\n$\n"));
+        assertThat( capturedStdout, is("LDR 00000n    2200000   4500\n010 00 *axαx\n$\n"));
     }
 
     @Test void danmarc2isoOutput() throws Exception {
@@ -174,7 +174,7 @@ class MarcConversionAppTest {
     void danmarc2Input() throws Exception {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("record_with_utf8_in_danmarc2.iso"), "-i", "danmarc2", "--format=line"));
 
-        assertThat( capturedStdout, is("010 00 *axαx\n$\n"));
+        assertThat( capturedStdout, is("LDR 00000n    2200000   4500\n010 00 *axαx\n$\n"));
     }
 
     @Test
