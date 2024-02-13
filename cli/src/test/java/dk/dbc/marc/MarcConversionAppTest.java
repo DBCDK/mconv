@@ -1,8 +1,3 @@
-/*
- * Copyright Dansk Bibliotekscenter a/s. Licensed under GPLv3
- * See license text in LICENSE.md
- */
-
 package dk.dbc.marc;
 
 import org.junit.jupiter.api.Test;
@@ -49,13 +44,6 @@ class MarcConversionAppTest {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marc_collection.iso"), "-o", "danmarc2", "--format=iso"));
 
         assertThat(capturedStdout, is(readResourceAsString("marc_collection.expected_dm2.iso")));
-    }
-
-    @Test
-    void marcXmlLine() throws Exception {
-        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=LINE"));
-
-        assertThat(capturedStdout, is("001 control1\n100    $acode-a$bcode-b\n\n"));
     }
 
     @Test
@@ -116,34 +104,52 @@ class MarcConversionAppTest {
 
 
     @Test
-    void marcMmlLineWhiteSpaceShort() throws Exception {
-        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "-p","--format=LINE"));
-
-        assertThat(capturedStdout, is("001 control1\n100    $a code-a $b code-b\n\n"));
-    }
-
-
-    @Test
-    void marcXmlLineWhiteSpaceLong() throws Exception {
-        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--include-whitespace-padding","--format=LINE"));
-
-        assertThat(capturedStdout, is("001 control1\n100    $a code-a $b code-b\n\n"));
+    void marcXmlLineLax() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=LINE"));
+        assertThat(capturedStdout, is("00925njm  22002777a 4500\n001 control1\n100    *a code-a *b code-b\n\n"));
     }
 
     @Test
-    void marcXmlLineWithLeaderShort() throws Exception {
-        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "-l","--format=LINE"));
+    void marcXmlLineLaxNoLeader() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=LINE", "--include-leader=false"));
+        assertThat(capturedStdout, is("001 control1\n100    *a code-a *b code-b\n\n"));
+    }
 
+    @Test
+    void marcXmlLineLaxNoPadding() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=LINE", "--include-whitespace-padding=false"));
+        assertThat(capturedStdout, is("00925njm  22002777a 4500\n001 control1\n100    *acode-a*bcode-b\n\n"));
+    }
+
+    @Test
+    void marcXmlLineStrict() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=LINE", "--mode=STRICT"));
         assertThat(capturedStdout, is("00925njm  22002777a 4500\n001 control1\n100    $acode-a$bcode-b\n\n"));
     }
 
     @Test
-    void marcXmlLineWithLeaderLong() throws Exception {
-        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--include-leader","--format=LINE"));
-
-        assertThat(capturedStdout, is("00925njm  22002777a 4500\n001 control1\n100    $acode-a$bcode-b\n\n"));
+    void marcXmlLineStrictNoLeader() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=LINE", "--mode=STRICT", "--include-leader=false"));
+        assertThat(capturedStdout, is("001 control1\n100    $acode-a$bcode-b\n\n"));
     }
 
+    @Test
+    void marcXmlLineStrictWithPadding() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=LINE", "--mode=STRICT", "--include-whitespace-padding"));
+        assertThat(capturedStdout, is("00925njm  22002777a 4500\n001 control1\n100    $a code-a $b code-b\n\n"));
+    }
+
+    @Test
+    void marcXmlmarcXchangeLax() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=MARCXCHANGE"));
+        assertThat(capturedStdout, is("<record xmlns='info:lc/xmlns/marcxchange-v1' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd'><leader>00925njm  22002777a 4500</leader><controlfield tag='001'>control1</controlfield><datafield ind1=' ' ind2=' ' tag='100'><subfield code='a'>code-a</subfield><subfield code='b'>code-b</subfield></datafield></record>"));
+    }
+
+    @Test
+    void marcXmlmarcXchangeStrict() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=MARCXCHANGE", "--mode=STRICT"));
+        assertThat(capturedStdout, is("<?xml version='1.0' encoding='UTF-8'?>\n<record xmlns='info:lc/xmlns/marcxchange-v1' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd'><leader>00925njm  22002777a 4500</leader><controlfield tag='001'>control1</controlfield><datafield ind1=' ' ind2=' ' tag='100'><subfield code='a'>code-a</subfield><subfield code='b'>code-b</subfield></datafield></record>"));
+    }
 
     @Test
     void marc8isoOutput() throws Exception {
@@ -178,7 +184,7 @@ class MarcConversionAppTest {
         withTextFromSystemIn(standardInput).execute(() -> {
            String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith("--format=LINE"));
 
-           assertThat(capturedStdout, is("001 control1\n100    $acode-a$bcode-b\n\n"));
+           assertThat(capturedStdout, is("00925njm  22002777a 4500\n001 control1\n100    *a code-a *b code-b\n\n"));
         });
     }
 
@@ -189,7 +195,7 @@ class MarcConversionAppTest {
         withTextFromSystemIn(standardInput).execute(() -> {
             String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith("-", "--format=LINE"));
 
-            assertThat(capturedStdout, is("001 control1\n100    $acode-a$bcode-b\n\n"));
+            assertThat(capturedStdout, is("00925njm  22002777a 4500\n001 control1\n100    *a code-a *b code-b\n\n"));
         });
     }
 

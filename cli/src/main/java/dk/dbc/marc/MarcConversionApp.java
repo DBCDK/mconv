@@ -1,8 +1,3 @@
-/*
- * Copyright Dansk Bibliotekscenter a/s. Licensed under GPLv3
- * See license text in LICENSE.md
- */
-
 package dk.dbc.marc;
 
 import dk.dbc.marc.binding.DataField;
@@ -36,14 +31,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static dk.dbc.marc.RecordFormat.LINE;
-import static dk.dbc.marc.RecordFormat.LINE_CONCAT;
 
 @CommandLine.Command(name = "mconv ", version = "2.0",
-        description = "Reads in and parses MARC records from file\n" +
-                       "and supports output in both MARC21 or DANMARC2 line-format and ISO2709",
+        description = "Parses MARC records while supporting output in various formats",
         mixinStandardHelpOptions = true)
 public class MarcConversionApp implements Runnable {
     private static final int PUSHBACK_BUFFER_SIZE = 1000;
+
+    private enum Mode {
+        LAX,
+        STRICT
+    }
 
     @CommandLine.Parameters(
             paramLabel = "inputfile",
@@ -52,10 +50,16 @@ public class MarcConversionApp implements Runnable {
     File inputFile;
 
     @CommandLine.Option(
+            names = { "-m", "--mode"},
+            defaultValue = "LAX",
+            description = "Output mode ${COMPLETION-CANDIDATES}\nSee README.md for a detailed description of the mode option.\nDefaults to ${DEFAULT-VALUE}.")
+    Mode mode=Mode.LAX;
+
+    @CommandLine.Option(
             names = { "-f", "--format"},
             defaultValue = "LINE",
-            description = "Output format ${COMPLETION-CANDIDATES}\ndefaults to ${DEFAULT-VALUE}.")
-    RecordFormat outputFormat=LINE_CONCAT;
+            description = "Output format ${COMPLETION-CANDIDATES}\nDefaults to ${DEFAULT-VALUE}.")
+    RecordFormat outputFormat=LINE;
 
     @CommandLine.Option(
             names = {"-i", "--input-encoding"},
@@ -72,16 +76,16 @@ public class MarcConversionApp implements Runnable {
     Charset outputEncoding = StandardCharsets.UTF_8;
 
     @CommandLine.Option(names = {"-l", "--include-leader"},
-            defaultValue = "false",
-            description = "Include leader in line format output (MARC21 only).\nDefaults to ${DEFAULT-VALUE}."
+            defaultValue = CommandLine.Option.NULL_VALUE,
+            description = "Include leader in line format output (MARC21 only)."
     )
-    Boolean includeLeader = Boolean.FALSE;
+    Boolean includeLeader;
 
     @CommandLine.Option(names = {"-p", "--include-whitespace-padding"},
-            defaultValue = "false",
-            description = "Pad subfields with whitespace in line format output (MARC21 only).\nDefaults to ${DEFAULT-VALUE}."
+            defaultValue = CommandLine.Option.NULL_VALUE,
+            description = "Pad subfields with whitespace in line format output (MARC21 only)."
     )
-    Boolean includeWhitespacePadding = Boolean.FALSE;
+    Boolean includeWhitespacePadding;
 
     @CommandLine.Option(names = {"-c", "--as-collection"},
             defaultValue = "false",
@@ -197,7 +201,7 @@ public class MarcConversionApp implements Runnable {
             case MARCXCHANGE:
                 return getMarcXchangeWriter();
             default:
-                throw new IllegalStateException("Unhandled format: Shut not happen" );
+                throw new IllegalStateException("Unhandled format: " + outputFormat);
         }
     }
 
@@ -209,16 +213,35 @@ public class MarcConversionApp implements Runnable {
         final LineFormatWriter lineFormatWriter = outputFormat == LINE
                 ? new LineFormatWriter() : new LineFormatConcatWriter();
 
-        return lineFormatWriter
-                .setProperty(LineFormatWriter.Property.INCLUDE_LEADER,
-                        includeLeader)
-                .setProperty(LineFormatWriter.Property.INCLUDE_WHITESPACE_PADDING,
-                        includeWhitespacePadding);
+        if (mode == Mode.LAX) {
+            lineFormatWriter
+                    .setProperty(LineFormatWriter.Property.INCLUDE_LEADER, true)
+                    .setProperty(LineFormatWriter.Property.INCLUDE_WHITESPACE_PADDING, true)
+                    .setProperty(LineFormatWriter.Property.USE_STAR_SUBFIELD_MARKER, true);
+        } else {
+            lineFormatWriter
+                    .setProperty(LineFormatWriter.Property.INCLUDE_LEADER, true)
+                    .setProperty(LineFormatWriter.Property.INCLUDE_WHITESPACE_PADDING, false)
+                    .setProperty(LineFormatWriter.Property.USE_STAR_SUBFIELD_MARKER, false);
+        }
+
+        if (includeLeader != null) {
+            lineFormatWriter.setProperty(LineFormatWriter.Property.INCLUDE_LEADER, includeLeader);
+        }
+        if (includeWhitespacePadding != null) {
+            lineFormatWriter.setProperty(LineFormatWriter.Property.INCLUDE_WHITESPACE_PADDING, includeWhitespacePadding);
+        }
+
+        return lineFormatWriter;
     }
 
     private MarcWriter getMarcXchangeWriter() {
         final MarcXchangeV1Writer marcXchangeV1Writer = new MarcXchangeV1Writer();
-        marcXchangeV1Writer.setProperty(MarcXchangeV1Writer.Property.ADD_XML_DECLARATION, false);
+        if (mode == Mode.LAX) {
+            marcXchangeV1Writer.setProperty(MarcXchangeV1Writer.Property.ADD_XML_DECLARATION, false);
+        } else {
+            marcXchangeV1Writer.setProperty(MarcXchangeV1Writer.Property.ADD_XML_DECLARATION, true);
+        }
         return marcXchangeV1Writer;
     }
 
