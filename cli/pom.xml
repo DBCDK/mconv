@@ -18,11 +18,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>dk.dbc</groupId>
-            <artifactId>dbc-commons-marc</artifactId>
-            <version>${dbc-commons-marc.version}</version>
-        </dependency>
-        <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
             <version>${picocli.version}</version>
@@ -126,7 +121,6 @@
                                 <buildArg>-H:ResourceConfigurationFiles=${project.basedir}/resource-config.json</buildArg>
                                 <buildArg>-H:+ReportExceptionStackTraces</buildArg>
                                 <buildArg>--initialize-at-build-time=org.slf4j.LoggerFactory</buildArg>
-                                <buildArg>--initialize-at-build-time=ch.qos.logback.classic.Logger</buildArg>
                                 <buildArg>--initialize-at-build-time=dk.dbc.marc.DanMarc2CharsetConfiguration</buildArg>
                                 <buildArg>--initialize-at-build-time=dk.dbc.marc.DanMarc2Charset$1</buildArg>
                                 <buildArg>--initialize-at-build-time=dk.dbc.marc.Marc8DecodeCodeTable</buildArg>
