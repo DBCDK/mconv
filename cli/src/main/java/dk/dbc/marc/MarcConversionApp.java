@@ -82,7 +82,7 @@ public class MarcConversionApp implements Runnable {
     Optional<Boolean> includeLeader;
 
     @CommandLine.Option(names = {"-p", "--include-whitespace-padding"},
-            description = "Pad subfields with whitespace in line format output (MARC21 only)."
+            description = "Pad subfields with whitespace in line format output."
     )
     Optional<Boolean> includeWhitespacePadding;
 
@@ -209,10 +209,22 @@ public class MarcConversionApp implements Runnable {
             final DanMarc2LineFormatWriter danMarc2LineFormatWriter = outputFormat == LINE
                     ? new DanMarc2LineFormatWriter() : new DanMarc2LineFormatConcatWriter();
 
-            danMarc2LineFormatWriter.setProperty(DanMarc2LineFormatWriter.Property.INCLUDE_LEADER, true);
+            if (mode == Mode.LAX) {
+                danMarc2LineFormatWriter
+                        .setProperty(DanMarc2LineFormatWriter.Property.INCLUDE_LEADER, true)
+                        .setProperty(DanMarc2LineFormatWriter.Property.INCLUDE_WHITESPACE_PADDING, true)
+                        .setProperty(DanMarc2LineFormatWriter.Property.USE_WRAPPED_LINES, false);
+            } else {
+                danMarc2LineFormatWriter
+                        .setProperty(DanMarc2LineFormatWriter.Property.INCLUDE_LEADER, true)
+                        .setProperty(DanMarc2LineFormatWriter.Property.INCLUDE_WHITESPACE_PADDING, false)
+                        .setProperty(DanMarc2LineFormatWriter.Property.USE_WRAPPED_LINES, true);
+            }
 
             includeLeader.ifPresent(flag -> danMarc2LineFormatWriter
                     .setProperty(DanMarc2LineFormatWriter.Property.INCLUDE_LEADER, flag));
+            includeWhitespacePadding.ifPresent(flag -> danMarc2LineFormatWriter
+                    .setProperty(DanMarc2LineFormatWriter.Property.INCLUDE_WHITESPACE_PADDING, flag));
 
             return danMarc2LineFormatWriter;
         }

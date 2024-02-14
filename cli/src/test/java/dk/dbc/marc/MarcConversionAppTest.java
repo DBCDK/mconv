@@ -18,12 +18,6 @@ import static org.junit.jupiter.api.parallel.Resources.SYSTEM_OUT;
 
 @ResourceLock( SYSTEM_OUT )
 class MarcConversionAppTest {
-    @Test
-    void appLineConcatOutput() throws Exception {
-        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marc_collection.xml"), "--format=LINE_CONCAT", "--include-leader=false"));
-
-        assertThat(capturedStdout, is(readResourceAsString("marc_collection.lin_concat")));
-    }
 
     @Test
     void returnZeroOnSucces() {
@@ -40,31 +34,7 @@ class MarcConversionAppTest {
     }
 
     @Test
-    void appLineOutput() throws Exception {
-        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marc_collection.iso"), "-o", "danmarc2", "--format=iso"));
-
-        assertThat(capturedStdout, is(readResourceAsString("marc_collection.expected_dm2.iso")));
-    }
-
-    @Test
-    void JsonlToMarcXchange() throws Exception {
-        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marc.jsonl"), "--format=MARCXCHANGE"));
-
-        assertThat(capturedStdout, is(
-                "<record xmlns='info:lc/xmlns/marcxchange-v1' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd'>" +
-                        "<datafield ind1='0' ind2='0' tag='001'>" +
-                          "<subfield code='a'>30769430</subfield>" +
-                        "</datafield>" +
-                      "</record>" +
-                      "<record xmlns='info:lc/xmlns/marcxchange-v1' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd'>" +
-                        "<datafield ind1='0' ind2='0' tag='001'>" +
-                          "<subfield code='a'>30769431</subfield>" +
-                        "</datafield>" +
-                      "</record>"));
-    }
-
-    @Test
-    void JsonlToMarcXchangeCollection() throws Exception {
+    void formatMarcXchangeCollection() throws Exception {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marc.jsonl"), "-c", "--format=MARCXCHANGE"));
 
         assertThat(capturedStdout, is(
@@ -83,7 +53,7 @@ class MarcConversionAppTest {
     }
 
     @Test
-    void marcXmlJsonLine() throws Exception {
+    void formatJsonLine() throws Exception {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=jsonl"));
 
         assertThat(capturedStdout, is(
@@ -102,78 +72,112 @@ class MarcConversionAppTest {
         ));
     }
 
-
     @Test
-    void marcXmlLineLax() throws Exception {
+    void formatLineLax() throws Exception {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=LINE"));
         assertThat(capturedStdout, is("00925njm  22002777a 4500\n001 control1\n100    *a code-a *b code-b\n\n"));
     }
 
     @Test
-    void marcXmlLineLaxNoLeader() throws Exception {
+    void formatLineLaxNoLeader() throws Exception {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=LINE", "--include-leader=false"));
         assertThat(capturedStdout, is("001 control1\n100    *a code-a *b code-b\n\n"));
     }
 
     @Test
-    void marcXmlLineLaxNoPadding() throws Exception {
+    void formatLineLaxNoPadding() throws Exception {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=LINE", "--include-whitespace-padding=false"));
         assertThat(capturedStdout, is("00925njm  22002777a 4500\n001 control1\n100    *acode-a*bcode-b\n\n"));
     }
 
     @Test
-    void marcXmlLineStrict() throws Exception {
-        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=LINE", "--mode=STRICT"));
+    void FormatLineStrict() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=LINE", "--mode=strict"));
         assertThat(capturedStdout, is("00925njm  22002777a 4500\n001 control1\n100    $acode-a$bcode-b\n\n"));
     }
 
     @Test
-    void marcXmlLineStrictNoLeader() throws Exception {
-        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=LINE", "--mode=STRICT", "--include-leader=false"));
+    void formatLineStrictNoLeader() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=LINE", "--mode=strict", "--include-leader=false"));
         assertThat(capturedStdout, is("001 control1\n100    $acode-a$bcode-b\n\n"));
     }
 
     @Test
-    void marcXmlLineStrictWithPadding() throws Exception {
-        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=LINE", "--mode=STRICT", "--include-whitespace-padding"));
+    void formatLineStrictWithPadding() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=LINE", "--mode=strict", "--include-whitespace-padding"));
         assertThat(capturedStdout, is("00925njm  22002777a 4500\n001 control1\n100    $a code-a $b code-b\n\n"));
     }
 
     @Test
-    void marcXmlmarcXchangeLax() throws Exception {
+    void formatMarcXchangeLax() throws Exception {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=MARCXCHANGE"));
         assertThat(capturedStdout, is("<record xmlns='info:lc/xmlns/marcxchange-v1' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd'><leader>00925njm  22002777a 4500</leader><controlfield tag='001'>control1</controlfield><datafield ind1=' ' ind2=' ' tag='100'><subfield code='a'>code-a</subfield><subfield code='b'>code-b</subfield></datafield></record>"));
     }
 
     @Test
-    void marcXmlmarcXchangeStrict() throws Exception {
+    void formatMarcXchangeStrict() throws Exception {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marcxml_minimal.xml"), "--format=MARCXCHANGE", "--mode=STRICT"));
         assertThat(capturedStdout, is("<?xml version='1.0' encoding='UTF-8'?>\n<record xmlns='info:lc/xmlns/marcxchange-v1' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd'><leader>00925njm  22002777a 4500</leader><controlfield tag='001'>control1</controlfield><datafield ind1=' ' ind2=' ' tag='100'><subfield code='a'>code-a</subfield><subfield code='b'>code-b</subfield></datafield></record>"));
     }
 
     @Test
-    void marc8isoOutput() throws Exception {
+    void formatDanmarc2LineLax() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("record_with_utf8_in_danmarc2.iso"), "-i", "danmarc2", "--format=line"));
+        assertThat(capturedStdout, is("LDR 00000n    2200000   4500\n010 00 *a xαx\n$\n"));
+    }
+
+    @Test
+    void formatDanmarc2LineLaxNoLeader() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("record_with_utf8_in_danmarc2.iso"), "-i", "danmarc2", "--format=line", "--include-leader=false"));
+        assertThat(capturedStdout, is("010 00 *a xαx\n$\n"));
+    }
+
+    @Test
+    void formatDanmarc2LineLaxNoPadding() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("record_with_utf8_in_danmarc2.iso"), "-i", "danmarc2", "--format=line", "--include-whitespace-padding=false"));
+        assertThat(capturedStdout, is("LDR 00000n    2200000   4500\n010 00 *axαx\n$\n"));
+    }
+
+    @Test
+    void formatDanmarc2LineStrict() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("record_with_utf8_in_danmarc2.iso"), "-i", "danmarc2", "--format=line", "--mode=strict"));
+        assertThat(capturedStdout, is("LDR 00000n    2200000   4500\n010 00 *axαx\n$\n"));
+    }
+
+    @Test
+    void formatDanmarc2LineStrictNoLeader() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("record_with_utf8_in_danmarc2.iso"), "-i", "danmarc2", "--format=line", "--mode=strict", "--include-leader=false"));
+        assertThat(capturedStdout, is("010 00 *axαx\n$\n"));
+    }
+
+    @Test
+    void formatDanmarc2LineStrictWithPadding() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("record_with_utf8_in_danmarc2.iso"), "-i", "danmarc2", "--format=line", "--mode=strict", "--include-whitespace-padding"));
+        assertThat(capturedStdout, is("LDR 00000n    2200000   4500\n010 00 *a xαx\n$\n"));
+    }
+
+    @Test
+    void formatDanmarc2LineConcat() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marc_collection.xml"), "--format=LINE_CONCAT", "--include-leader=false", "--mode=strict"));
+        assertThat(capturedStdout, is(readResourceAsString("marc_collection.lin_concat")));
+    }
+
+    @Test
+    void formatIso() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("marc_collection.iso"), "-o", "danmarc2", "--format=iso"));
+        assertThat(capturedStdout, is(readResourceAsString("marc_collection.expected_dm2.iso")));
+    }
+
+    @Test
+    void marc8Output() throws Exception {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("record_with_utf8.xml"), "-o", "marc8", "--format=iso"));
 
         assertThat(capturedStdout, is(readResourceAsString("record_with_utf8_in_marc8.iso")));
     }
 
-    @Test void marc8Input() throws Exception {
-        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("record_with_utf8_in_marc8.iso"), "-i", "marc8", "--format=line"));
-
-        assertThat( capturedStdout, is("LDR 00000n    2200000   4500\n010 00 *axαx\n$\n"));
-    }
-
-    @Test void danmarc2isoOutput() throws Exception {
-        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("record_with_utf8.xml"), "-o", "danmarc2", "--format=iso"));
-
-        assertThat(capturedStdout, is(readResourceAsString("record_with_utf8_in_danmarc2.iso")));
-    }
-
     @Test
-    void danmarc2Input() throws Exception {
-        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("record_with_utf8_in_danmarc2.iso"), "-i", "danmarc2", "--format=line"));
-
+    void marc8Input() throws Exception {
+        String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("record_with_utf8_in_marc8.iso"), "-i", "marc8", "--format=line", "--mode=strict"));
         assertThat( capturedStdout, is("LDR 00000n    2200000   4500\n010 00 *axαx\n$\n"));
     }
 
