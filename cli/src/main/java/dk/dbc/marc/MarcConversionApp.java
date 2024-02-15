@@ -92,7 +92,6 @@ public class MarcConversionApp implements Runnable {
     )
     Boolean asCollection = Boolean.FALSE;
 
-
     public static void main(String[] args) {
         int exitCode=0;
         try {
@@ -103,7 +102,6 @@ public class MarcConversionApp implements Runnable {
         }
         System.exit(exitCode);
     }
-
 
     static int runWith(String... args) throws CliException {
         CommandLine cli=new CommandLine( new MarcConversionApp()).setCaseInsensitiveEnumValuesAllowed(true);
@@ -213,11 +211,13 @@ public class MarcConversionApp implements Runnable {
                 danMarc2LineFormatWriter
                         .setProperty(DanMarc2LineFormatWriter.Property.INCLUDE_LEADER, true)
                         .setProperty(DanMarc2LineFormatWriter.Property.INCLUDE_WHITESPACE_PADDING, true)
+                        .setProperty(DanMarc2LineFormatWriter.Property.USE_NEWLINE_END_OF_RECORD, true)
                         .setProperty(DanMarc2LineFormatWriter.Property.USE_WRAPPED_LINES, false);
             } else {
                 danMarc2LineFormatWriter
                         .setProperty(DanMarc2LineFormatWriter.Property.INCLUDE_LEADER, true)
                         .setProperty(DanMarc2LineFormatWriter.Property.INCLUDE_WHITESPACE_PADDING, false)
+                        .setProperty(DanMarc2LineFormatWriter.Property.USE_NEWLINE_END_OF_RECORD, false)
                         .setProperty(DanMarc2LineFormatWriter.Property.USE_WRAPPED_LINES, true);
             }
 

@@ -65,12 +65,12 @@ $ cat marc_collection.xml | mconv -
 
 ## Lax vs Strict mode
 
-| Output format                  | Lax                                                                            | Strict                                                                      |
-|--------------------------------|--------------------------------------------------------------------------------|-----------------------------------------------------------------------------|
-| ISO                            | Same                                                                           | Same                                                                        |
-| JSONL                          | Same                                                                           | Same                                                                        |
-| LINE (DANMARC2 variant)        | Include leader<br/>Include whitespace padding<br/>No line wrapping             | Include leader<br/>No whitespace padding<br/>Wrap lines                     |
-| LINE_CONCAT (DANMARC2 variant) | Same as LINE (DANMARC2 variant) lax mode                                       | Same as LINE (DANMARC2 variant) Strict mode                                 |
-| LINE (MARC21 variant)          | Include leader<br/>Include whitespace padding<br/>Use star (*) subfield marker | Include leader<br/>No whitespace padding<br/>Use dollar ($) subfield marker |
-| LINE_CONCAT (MARC21 variant)   | Same as LINE (MARC21 variant) Lax mode                                         | Same as LINE (MARC21 variant) Strict mode                                   |
-| MARCXCHANGE                    | No XML declaration                                                             | Include XML declaration                                                     |
+| Output format                  | Lax                                                                                                        | Strict                                                                                                       |
+|--------------------------------|------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| ISO                            | Same                                                                                                       | Same                                                                                                         |
+| JSONL                          | Same                                                                                                       | Same                                                                                                         |
+| LINE (DANMARC2 variant)        | Include leader<br/>Include whitespace padding<br/>No line wrapping<br/>Use newline as end-of-record marker | Include leader<br/>No whitespace padding<br/>Wrap lines<br/>Use dollar ($) + newline as end-of-record marker |
+| LINE_CONCAT (DANMARC2 variant) | Same as LINE (DANMARC2 variant) lax mode                                                                   | Same as LINE (DANMARC2 variant) Strict mode                                                                  |
+| LINE (MARC21 variant)          | Include leader<br/>Include whitespace padding<br/>Use star (*) subfield marker                             | Include leader<br/>No whitespace padding<br/>Use dollar ($) subfield marker                                  |
+| LINE_CONCAT (MARC21 variant)   | Same as LINE (MARC21 variant) Lax mode                                                                     | Same as LINE (MARC21 variant) Strict mode                                                                    |
+| MARCXCHANGE                    | No XML declaration                                                                                         | Include XML declaration                                                                                      |

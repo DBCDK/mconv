@@ -123,19 +123,19 @@ class MarcConversionAppTest {
     @Test
     void formatDanmarc2LineLax() throws Exception {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("record_with_utf8_in_danmarc2.iso"), "-i", "danmarc2", "--format=line"));
-        assertThat(capturedStdout, is("LDR 00000n    2200000   4500\n010 00 *a xαx\n$\n"));
+        assertThat(capturedStdout, is("LDR 00000n    2200000   4500\n010 00 *a xαx\n\n"));
     }
 
     @Test
     void formatDanmarc2LineLaxNoLeader() throws Exception {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("record_with_utf8_in_danmarc2.iso"), "-i", "danmarc2", "--format=line", "--include-leader=false"));
-        assertThat(capturedStdout, is("010 00 *a xαx\n$\n"));
+        assertThat(capturedStdout, is("010 00 *a xαx\n\n"));
     }
 
     @Test
     void formatDanmarc2LineLaxNoPadding() throws Exception {
         String capturedStdout = tapSystemOut(() -> MarcConversionApp.runWith(resource("record_with_utf8_in_danmarc2.iso"), "-i", "danmarc2", "--format=line", "--include-whitespace-padding=false"));
-        assertThat(capturedStdout, is("LDR 00000n    2200000   4500\n010 00 *axαx\n$\n"));
+        assertThat(capturedStdout, is("LDR 00000n    2200000   4500\n010 00 *axαx\n\n"));
     }
 
     @Test

@@ -1,8 +1,7 @@
 {
   "resources":{
   "includes":[
-    {"pattern":"\\QMETA-INF/services/java.nio.charset.spi.CharsetProvider\\E"}, 
-    {"pattern":"\\Qorg/slf4j/impl/StaticLoggerBinder.class\\E"}
+    {"pattern":"\\QMETA-INF/services/java.nio.charset.spi.CharsetProvider\\E"}
   ]},
   "bundles":[]
 }
