@@ -74,3 +74,11 @@ $ cat marc_collection.xml | mconv -
 | LINE (MARC21 variant)          | Include leader<br/>Include whitespace padding<br/>Use star (*) subfield marker                             | Include leader<br/>No whitespace padding<br/>Use dollar ($) subfield marker                                  |
 | LINE_CONCAT (MARC21 variant)   | Same as LINE (MARC21 variant) Lax mode                                                                     | Same as LINE (MARC21 variant) Strict mode                                                                    |
 | MARCXCHANGE                    | No XML declaration                                                                                         | Include XML declaration                                                                                      |
+          
+The `mconv` tool itself is only guaranteed to be able to read output from `Strict` mode.
+
+## Error reporting
+
+When MARC errors are encountered in the input, and the input format is ISO2709, error details together with
+the raw input record is written to the file `mconv.errdump` in the current working directory, otherwise errors
+are reported directly to the console. In both cases mconv will return with exit code 1.
