@@ -186,8 +186,7 @@ public class MarcConversionApp implements Runnable {
             case JSONL:
                 return new JsonLineReader(is, encoding);
             case LINE:
-                return new LineFormatReader(is, encoding)
-                        .setProperty(LineFormatReader.Property.INCLUDE_WHITESPACE_PADDING, includeWhitespacePadding);
+                return new LineFormatReader(is, encoding);
             case DANMARC2_LINE:
                 return new DanMarc2LineFormatReader(is, encoding);
             case MARCXCHANGE:
@@ -222,10 +221,8 @@ public class MarcConversionApp implements Runnable {
                 throw new IllegalStateException("Unhandled format: " + outputFormat);
         }
 
-        if (Boolean.TRUE.equals(asCollection)) {
-            if (!marcWriter.canOutputCollection()) {
+        if (Boolean.TRUE.equals(asCollection) && !marcWriter.canOutputCollection()) {
                 throw new IllegalArgumentException("Output format " + outputFormat + " does not support collections");
-            }
         }
 
         return marcWriter;
