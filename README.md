@@ -4,14 +4,7 @@ output in either MARCXCHANGE, MARC21, DANMARC2 line-format, JSONL or ISO2709.
 
 ## Installation
 
-```bash
-$ curl -sL http://mavenrepo.dbc.dk/content/repositories/releases/dk/dbc/mconv/1.3/mconv-1.3.jar -o mconv.jar && unzip -op mconv.jar mconv | bash -s -- --install
-```
-
-Keep the installation up-to-date using the selfupdate action
-```bash
-mconv --selfupdate
-```
+TBD
 
 ## Usage
 ```bash
