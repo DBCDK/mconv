@@ -1,5 +1,6 @@
 package dk.dbc.marc;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.ResourceLock;
 
@@ -7,6 +8,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static com.github.stefanbirkner.systemlambda.SystemLambda.tapSystemOut;
@@ -16,21 +18,35 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.jupiter.api.parallel.Resources.SYSTEM_OUT;
 
-@ResourceLock( SYSTEM_OUT )
+@ResourceLock(SYSTEM_OUT)
 class MarcConversionAppTest {
+
+    private static final Path errdumpFile = Paths.get(MarcConversionApp.ERRDUMP_FILENAME);
+
+    @AfterEach
+    void removeErrorDump() throws IOException {
+        Files.deleteIfExists(errdumpFile);
+    }
 
     @Test
     void returnZeroOnSucces() {
-        int exitCode=MarcConversionApp.runWith(resource("marc_collection.xml"), "--format=LINE_CONCAT");
-
-        assertThat( exitCode, is (0));
+        int exitCode = MarcConversionApp.runWith(resource("marc_collection.xml"), "--format=LINE_CONCAT");
+        assertThat("exit code", exitCode, is(0));
+        assertThat("errdump file exists", Files.exists(errdumpFile), is(false));
     }
 
     @Test
     void returnNonZeroOnFail() {
-        int exitCode=MarcConversionApp.runWith(resource("marc_collection.xml"), "--format=NON_EXISTING_FORMAT");
+        int exitCode = MarcConversionApp.runWith(resource("marc_collection.xml"), "--format=NON_EXISTING_FORMAT");
+        assertThat("exit code", exitCode, is(not(0)));
+        assertThat("errdump file exists", Files.exists(errdumpFile), is(false));
+    }
 
-        assertThat( exitCode, is(not(0)));
+    @Test
+    void failWithErrorDump() {
+        int exitCode = MarcConversionApp.runWith(resource("err.mrc"));
+        assertThat("exit code", exitCode, is(not(0)));
+        assertThat("errdump file exists", Files.exists(errdumpFile), is(true));
     }
 
     @Test

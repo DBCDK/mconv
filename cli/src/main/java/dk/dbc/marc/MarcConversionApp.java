@@ -5,6 +5,7 @@ import dk.dbc.marc.binding.Field;
 import dk.dbc.marc.binding.MarcRecord;
 import dk.dbc.marc.reader.DanMarc2LineFormatReader;
 import dk.dbc.marc.reader.Iso2709Reader;
+import dk.dbc.marc.reader.Iso2709ReaderException;
 import dk.dbc.marc.reader.JsonLineReader;
 import dk.dbc.marc.reader.LineFormatReader;
 import dk.dbc.marc.reader.MarcReader;
@@ -22,6 +23,7 @@ import picocli.CommandLine;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PushbackInputStream;
 import java.io.UncheckedIOException;
@@ -92,60 +94,71 @@ public class MarcConversionApp implements Runnable {
     )
     Boolean asCollection = Boolean.FALSE;
 
+    public static final String ERRDUMP_FILENAME = "mconv.errdump";
+    private FileOutputStream errdumpFile = null;
+
     public static void main(String[] args) {
-        int exitCode=0;
-        try {
-            exitCode=runWith(args);
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
-        System.exit(exitCode);
+        System.exit(runWith(args));
     }
 
     static int runWith(String... args) throws CliException {
-        CommandLine cli=new CommandLine( new MarcConversionApp()).setCaseInsensitiveEnumValuesAllowed(true);
-        return cli.execute( args );
+        final CommandLine cli = new CommandLine(new MarcConversionApp())
+                .setExecutionExceptionHandler(new ExecutionExceptionHandler())
+                .setCaseInsensitiveEnumValuesAllowed(true);
+        return cli.execute(args);
     }
 
     @Override
     public void run() {
-
         final File in = inputFile;
         try (PushbackInputStream is = "-".equals(in.getName())
                 ? new PushbackInputStream(System.in, PUSHBACK_BUFFER_SIZE)
-                : new PushbackInputStream(new FileInputStream( inputFile.getAbsolutePath() ), PUSHBACK_BUFFER_SIZE)) {
-            final MarcReader marcRecordReader = getMarcReader( is, inputEncoding);
-            MarcRecord record = marcRecordReader.read();
-            if (record == null) {
+                : new PushbackInputStream(new FileInputStream(inputFile.getAbsolutePath()), PUSHBACK_BUFFER_SIZE)) {
+            final MarcReader marcRecordReader = getMarcReader(is, inputEncoding);
+            MarcRecordOrError recordOrError = readMarcRecord(marcRecordReader);
+            if (recordOrError == null) {
                 throw new IllegalArgumentException("Unknown input format");
             }
-            final MarcWriter marcWriter = getMarcWriter(record);
+            MarcWriter marcWriter = getMarcWriter(recordOrError);
 
-            List<MarcRecord> recordBuffer = null;
-            if (asCollection) {
-                if (!marcWriter.canOutputCollection()) {
-                    throw new IllegalArgumentException("Output format " + outputFormat + " does not support collections");
-                }
-                recordBuffer = new ArrayList<>();
-            }
-
-            while (record != null) {
-                if (asCollection) {
-                    recordBuffer.add(record);
+            final List<MarcRecord> recordBuffer = new ArrayList<>();
+            while (recordOrError != null) {
+                if (recordOrError.isError()) {
+                    dumpError(recordOrError);
                 } else {
-                    System.out.write(marcWriter.write(record, outputEncoding));
+                    if (marcWriter == null) {
+                        marcWriter = getMarcWriter(recordOrError);
+                    }
+                    if (Boolean.TRUE.equals(asCollection)) {
+                        recordBuffer.add(recordOrError.getRecord());
+                    } else {
+                        System.out.write(marcWriter.write(recordOrError.getRecord(), outputEncoding));
+                    }
                 }
-                record = marcRecordReader.read();
+                recordOrError = readMarcRecord(marcRecordReader);
             }
 
-            if (recordBuffer != null) {
+            if (!recordBuffer.isEmpty()) {
                 System.out.write(marcWriter.writeCollection(recordBuffer, outputEncoding));
             }
+
+            if (errdumpFile != null) {
+                throw new IllegalArgumentException(String.format(
+                        "Input contained erroneous MARC data, see %s file for further details", ERRDUMP_FILENAME));
+            }
+
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         } catch (MarcReaderException | MarcWriterException e) {
             throw new IllegalArgumentException(e);
+        } finally {
+            if (errdumpFile != null) {
+                try {
+                    errdumpFile.close();
+                } catch (IOException e) {
+                    // noop
+                }
+            }
         }
     }
 
@@ -186,20 +199,36 @@ public class MarcConversionApp implements Runnable {
         }
     }
 
-    private MarcWriter getMarcWriter(MarcRecord record) {
+    private MarcWriter getMarcWriter(MarcRecordOrError recordOrError) {
+        if (recordOrError.isError()) {
+            return null;
+        }
+        MarcWriter marcWriter;
         switch (outputFormat) {
             case LINE: // pass-through
             case LINE_CONCAT:
-                return getLineFormatWriterVariant(record);
+                marcWriter = getLineFormatWriterVariant(recordOrError.getRecord());
+                break;
             case ISO:
-                return new Iso2709MarcRecordWriter();
+                marcWriter = new Iso2709MarcRecordWriter();
+                break;
             case JSONL:
-                return new JsonLineWriter();
+                marcWriter = new JsonLineWriter();
+                break;
             case MARCXCHANGE:
-                return getMarcXchangeWriter();
+                marcWriter = getMarcXchangeWriter();
+                break;
             default:
                 throw new IllegalStateException("Unhandled format: " + outputFormat);
         }
+
+        if (Boolean.TRUE.equals(asCollection)) {
+            if (!marcWriter.canOutputCollection()) {
+                throw new IllegalArgumentException("Output format " + outputFormat + " does not support collections");
+            }
+        }
+
+        return marcWriter;
     }
 
     private MarcWriter getLineFormatWriterVariant(MarcRecord record) {
@@ -262,8 +291,79 @@ public class MarcConversionApp implements Runnable {
         return marcXchangeV1Writer;
     }
 
+    private MarcRecordOrError readMarcRecord(MarcReader reader) throws MarcReaderException {
+        try {
+            final MarcRecord record = reader.read();
+            if (record == null) {
+                return null;
+            }
+            return MarcRecordOrError.asRecord(record);
+        } catch (Iso2709ReaderException e) {
+            String errorMessage = e.getMessage();
+            final Throwable cause = e.getCause();
+            if (cause != null) {
+                errorMessage = cause.getMessage();
+            }
+            return MarcRecordOrError.asError(errorMessage, e.getRecordBytes());
+        }
+    }
+
+    private void dumpError(MarcRecordOrError error) {
+        try {
+            String errorMessageProlog = "\n";
+            if (errdumpFile == null) {
+                errdumpFile = new FileOutputStream(ERRDUMP_FILENAME, false);
+                errorMessageProlog = "";
+            }
+            errdumpFile.write((errorMessageProlog + error.getErrorMessage() + "\n").getBytes(StandardCharsets.UTF_8));
+            errdumpFile.write(error.getInputBytes());
+            errdumpFile.flush();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Error writing dump file " + ERRDUMP_FILENAME, e);
+        }
+    }
+
     private static boolean isDanMarc2(MarcRecord record) {
         final List<Field> fields = record.getFields();
         return !fields.isEmpty() && fields.get(0) instanceof DataField;
+    }
+
+    private static class MarcRecordOrError {
+        private static int recordNumber = 0;
+
+        private final MarcRecord record;
+        private final String errorMessage;
+        private final byte[] inputBytes;
+
+        public static MarcRecordOrError asRecord(MarcRecord record) {
+            return new MarcRecordOrError(record, null, null);
+        }
+
+        public static MarcRecordOrError asError(String errorMessage, byte[] inputBytes) {
+            return new MarcRecordOrError(null, errorMessage, inputBytes);
+        }
+
+        private MarcRecordOrError(MarcRecord record, String errorMessage, byte[] inputBytes) {
+            this.record = record;
+            this.errorMessage = errorMessage;
+            this.inputBytes = inputBytes;
+            recordNumber++;
+        }
+
+        public MarcRecord getRecord() {
+            return record;
+        }
+
+        public String getErrorMessage() {
+            return "Record number " + recordNumber + " - " + errorMessage;
+        }
+
+        public byte[] getInputBytes() {
+            return inputBytes;
+        }
+
+        public boolean isError() {
+            return errorMessage != null && inputBytes != null;
+        }
     }
 }
