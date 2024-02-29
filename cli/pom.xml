@@ -166,7 +166,7 @@
                                 <configuration>
                                     <artifacts>
                                         <artifact>
-                                            <file>${project.build.directory}/npm-dist/mconv-${version}.tgz</file>
+                                            <file>${project.build.directory}/npm-dist/mconv.tgz</file>
                                             <type>tgz</type>
                                         </artifact>
                                     </artifacts>
