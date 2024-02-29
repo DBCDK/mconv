@@ -21,3 +21,4 @@ if test -n "${BUILD_NUMBER}"; then
   npm version "${VERSION}" || die "npm version failed"
 fi
 npm pack || die "npm pack failed"
+cp mconv-*.tgz mconv.tgz
