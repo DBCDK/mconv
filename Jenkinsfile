@@ -47,7 +47,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                        mvn -Dmaven.repo.local=\$WORKSPACE/.repo jar:jar build-helper:attach-artifact deploy:deploy
+                        mvn -Dbuild_number=${BUILD_NUMBER} -Dmaven.repo.local=\$WORKSPACE/.repo jar:jar build-helper:attach-artifact deploy:deploy
                     """
                 }
             }
