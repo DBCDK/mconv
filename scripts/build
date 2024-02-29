@@ -2,6 +2,6 @@
 
 CI_OPTS=""
 if [ -n "$BUILD_NUMBER" ]; then
-  CI_OPTS="-B -Dmaven.repo.local=$WORKSPACE/.repo --no-transfer-progress -P native"
+  CI_OPTS="-B -Dbuild_number=${BUILD_NUMBER} -Dmaven.repo.local=$WORKSPACE/.repo --no-transfer-progress -P native"
 fi
 mvn $CI_OPTS verify javadoc:aggregate
