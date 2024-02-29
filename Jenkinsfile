@@ -40,23 +40,6 @@ pipeline {
             }
         }
 
-        stage("build-npm") {
-            agent {
-                docker {
-                    image 'docker-dbc.artifacts.dbccloud.dk/dbc-node:latest'
-                    args '--user isworker'
-                    alwaysPull true
-                    reuseNode true
-                }
-            }
-            steps {
-                sh """
-                    cd cli
-                    scripts/build-npm package.json target/mconv
-                """
-            }
-        }
-
         stage("deploy") {
             when {
                 branch "master"
@@ -64,7 +47,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                        mvn -Dmaven.repo.local=\$WORKSPACE/.repo jar:jar deploy:deploy
+                        mvn -Dmaven.repo.local=\$WORKSPACE/.repo jar:jar build-helper:attach-artifact deploy:deploy
                     """
                 }
             }
@@ -119,7 +102,7 @@ pipeline {
         }
 
         success {
-            archiveArtifacts artifacts: 'cli/target/mconv,**/target/*.tgz', fingerprint: true
+            archiveArtifacts artifacts: 'cli/target/mconv,cli/target/npm-dist/*.tgz', fingerprint: true
         }
     }
 }
