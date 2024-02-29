@@ -14,7 +14,7 @@ npm_dist=target/npm-dist
 
 rm -rf "${npm_dist}" || die
 mkdir "${npm_dist}" || die
-cp package.json package-lock.json "${MCONV_BINARY}" "${npm_dist}" || die
+cp package.json "${MCONV_BINARY}" "${npm_dist}" || die
 cd "${npm_dist}" || die
 npm install || die "npm install failed"
 if test -n "${BUILD_NUMBER}"; then
