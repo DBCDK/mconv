@@ -4,7 +4,6 @@
     <artifactId>mconv-cli</artifactId>
     <packaging>jar</packaging>
     <name>mconv-cli</name>
-    <version>2.0.${build_number}</version>
 
     <parent>
         <groupId>dk.dbc</groupId>
@@ -16,7 +15,7 @@
         <dependency>
             <groupId>dk.dbc</groupId>
             <artifactId>mconv-lib</artifactId>
-            <version>2.0</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>info.picocli</groupId>
@@ -82,100 +81,5 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>native</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.graalvm.buildtools</groupId>
-                        <artifactId>native-maven-plugin</artifactId>
-                        <version>${native.maven.plugin.version}</version>
-                        <extensions>true</extensions>
-                        <executions>
-                            <execution>
-                                <id>build-native</id>
-                                <goals>
-                                    <goal>build</goal>
-                                </goals>
-                                <phase>package</phase>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <imageName>mconv</imageName>
-                            <mainClass>dk.dbc.marc.MarcConversionApp</mainClass>
-                            <buildArgs>
-                                <buildArg>--no-fallback</buildArg>
-                                <!-- Allow the image to build with an incomplete class path.
-                                     Report type resolution errors at runtime when they are
-                                     accessed the first time, instead of during the image build. -->
-                                <buildArg>--allow-incomplete-classpath</buildArg>
-                                <buildArg>-H:ReflectionConfigurationFiles=${project.basedir}/reflectionconfig.json</buildArg>
-                                <buildArg>-H:ResourceConfigurationFiles=${project.basedir}/resource-config.json</buildArg>
-                                <buildArg>-H:+ReportExceptionStackTraces</buildArg>
-                                <buildArg>--initialize-at-build-time=org.slf4j.LoggerFactory</buildArg>
-                                <buildArg>--initialize-at-build-time=dk.dbc.marc.DanMarc2CharsetConfiguration</buildArg>
-                                <buildArg>--initialize-at-build-time=dk.dbc.marc.DanMarc2Charset$1</buildArg>
-                                <buildArg>--initialize-at-build-time=dk.dbc.marc.Marc8DecodeCodeTable</buildArg>
-                                <buildArg>--initialize-at-build-time=dk.dbc.marc.Marc8DecodeCodeTable$1</buildArg>
-                                <buildArg>--initialize-at-build-time=dk.dbc.marc.Marc8EncodeCodeTable</buildArg>
-                                <buildArg>--initialize-at-build-time=dk.dbc.marc.Marc8EncodeCodeTable$1</buildArg>
-                                <buildArg>--initialize-at-build-time=dk.dbc.marc.MarcCharsetProvider</buildArg>
-                                <buildArg>-H:+AddAllCharsets</buildArg>
-                            </buildArgs>
-                        </configuration>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>3.1.1</version>
-                        <executions>
-                            <execution>
-                                <phase>package</phase>
-                                <id>build-npm</id>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <arguments>
-                                        <argument>scripts/build-npm</argument>
-                                        <argument>target/mconv</argument>
-                                        <argument>${version}</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <executable>bash</executable>
-                        </configuration>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>build-helper-maven-plugin</artifactId>
-                        <version>3.3.0</version>
-                        <executions>
-                            <execution>
-                                <id>default-cli</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>attach-artifact</goal>
-                                </goals>
-                                <configuration>
-                                    <artifacts>
-                                        <artifact>
-                                            <file>${project.build.directory}/npm-dist/mconv-${version}.tgz</file>
-                                            <type>tgz</type>
-                                        </artifact>
-                                    </artifacts>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
+
