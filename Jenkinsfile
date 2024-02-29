@@ -42,7 +42,7 @@ pipeline {
 
         stage("deploy") {
             when {
-                branch "master"
+                branch "DI-1214-installation-debug"
             }
             steps {
                 script {
