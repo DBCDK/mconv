@@ -59,6 +59,7 @@
 
     <modules>
         <module>cli</module>
+        <module>cli-native</module>
         <module>lib</module>
     </modules>
 
