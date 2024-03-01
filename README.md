@@ -1,17 +1,18 @@
 # mconv
-mconv is a commandline-tool to read in and parse MARC records from file and
+mconv is a commandline-tool to read and parse MARC records from file and
 output in either MARCXCHANGE, MARC21, DANMARC2 line-format, JSONL or ISO2709.
 
 ## Installation
 
-```bash
-$ curl -sL http://mavenrepo.dbc.dk/content/repositories/releases/dk/dbc/mconv/1.3/mconv-1.3.jar -o mconv.jar && unzip -op mconv.jar mconv | bash -s -- --install
-```
+Make sure that any existing `~/.mconv` directory has been removed.
 
-Keep the installation up-to-date using the selfupdate action
-```bash
-mconv --selfupdate
-```
+If the `mconv` tool is not available, contact the data engineering team, who will then facilitate
+a system-wide installation.
+
+The `mconv` tool is available as a NPM package in the DBC maven repository, use the URL path
+below to get a list of available versions
+
+`/content/repositories/releases/dk/dbc/mconv-cli-native/maven-metadata.xml`
 
 ## Usage
 ```bash
