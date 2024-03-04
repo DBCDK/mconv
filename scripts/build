@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+CI_OPTS=""
+if [ -n "$BUILD_NUMBER" ]; then
+  CI_OPTS="-B -Dbuild_number=${BUILD_NUMBER} -Dmaven.repo.local=$WORKSPACE/.repo --no-transfer-progress"
+fi
+mvn $CI_OPTS verify

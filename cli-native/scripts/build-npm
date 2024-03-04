@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+MCONV_BINARY=$1
+VERSION=$2
+
+function die () {
+  local message=$1
+  [ -z "$message" ] && message="Died"
+  echo "$message (at ${BASH_SOURCE[1]}:${FUNCNAME[1]} line ${BASH_LINENO[0]}.)" >&2
+  exit 1
+}
+
+npm_dist=target/npm-dist
+
+rm -rf "${npm_dist}" || die
+mkdir "${npm_dist}" || die
+cp package.json "${MCONV_BINARY}" "${npm_dist}" || die
+cd "${npm_dist}" || die
+npm install || die "npm install failed"
+if test -n "${BUILD_NUMBER}"; then
+  npm version "${VERSION}" || die "npm version failed"
+fi
+npm pack || die "npm pack failed"

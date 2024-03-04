@@ -1,26 +1,21 @@
 #!groovy
-@Library('metascrum')
-import dk.dbc.metascrum.jenkins.Maven
 
 def workerNode = "devel11"
-def teamEmail = 'metascrum@dbc.dk'
-def teamSlack = 'meta-notifications'
+def teamEmail = 'de-team@dbc.dk'
+def teamSlack = 'de-notifications'
 
 pipeline {
     agent {
         label workerNode
     }
-    triggers {
-        gitlab(triggerOnPush: true, triggerOnMergeRequest: true, branchFilterType: 'All')
-    }
     options {
         timestamps()
-        gitLabConnection('isworker')
     }
     tools {
         jdk 'jdk11'
         maven "Maven 3"
     }
+
     stages {
         stage("clear workspace") {
             steps {
@@ -28,45 +23,56 @@ pipeline {
                 checkout scm
             }
         }
+
         stage("build") {
 			steps {
                 script {
-                    Maven.verify(this, true, "native")
-                    archiveArtifacts artifacts: 'mconv-exec/target/mconv', fingerprint: true
-                }
-            }
-        }
-        stage("build-npm") {
-            agent {
-                docker {
-                    image 'docker.dbc.dk/dbc-node'
-                    args '--user isworker'
-                    alwaysPull true
-                    reuseNode true
-                }
-            }
-            steps {
-                sh """
-                    cd mconv-exec
-                    scripts/build-npm package.json target/mconv
-                """
-                archiveArtifacts artifacts: '**/target/*.tgz', fingerprint: true
-            }
+                    def status = sh returnStatus: true, script: """
+                        ./scripts/build
+                        """
 
+                    junit testResults: '**/target/*-reports/*.xml'
+
+                    if (status != 0) {
+                        error("build failed")
+                    }
+                }
+            }
         }
+
         stage("deploy") {
             when {
                 branch "master"
             }
             steps {
                 script {
-                    Maven.deploy(this)
+                    sh """
+                        mvn -Dbuild_number=${BUILD_NUMBER} -Dmaven.repo.local=\$WORKSPACE/.repo -pl cli-native build-helper:attach-artifact deploy:deploy
+                    """
                 }
             }
         }
     }
 
     post {
+        fixed {
+            script {
+                if (env.BRANCH_NAME == 'master') {
+                    emailext(
+                        recipientProviders: [developers(), culprits()],
+                        to: teamEmail,
+                        subject: "[Jenkins] ${env.JOB_NAME} #${env.BUILD_NUMBER} back to normal",
+                        mimeType: 'text/html; charset=UTF-8',
+                        body: "<p>The master branch is back to normal.</p><p><a href=\"${env.BUILD_URL}\">Build information</a>.</p>",
+                        attachLog: false)
+                    slackSend(channel: teamSlack,
+                        color: 'good',
+                        message: "${env.JOB_NAME} #${env.BUILD_NUMBER} back to normal: ${env.BUILD_URL}",
+                        tokenCredentialId: 'slack-global-integration-token')
+                }
+            }
+        }
+
         failure {
             script {
                 if (env.BRANCH_NAME == 'master') {
@@ -93,26 +99,10 @@ pipeline {
                     )
                 }
             }
-            updateGitlabCommitStatus name: 'build', state: 'failed'
         }
 
         success {
-            script {
-                if (env.BRANCH_NAME == 'master' && currentBuild.getPreviousBuild() != null && currentBuild.getPreviousBuild().result == 'FAILURE') {
-                    emailext(
-                        recipientProviders: [developers(), culprits()],
-                        to: teamEmail,
-                        subject: "[Jenkins] ${env.JOB_NAME} #${env.BUILD_NUMBER} back to normal",
-                        mimeType: 'text/html; charset=UTF-8',
-                        body: "<p>The master build is back to normal.</p><p><a href=\"${env.BUILD_URL}\">Build information</a>.</p>",
-                        attachLog: false)
-                    slackSend(channel: teamSlack,
-                        color: 'good',
-                        message: "${env.JOB_NAME} #${env.BUILD_NUMBER} back to normal: ${env.BUILD_URL}",
-                        tokenCredentialId: 'slack-global-integration-token')
-                }
-            }
-            updateGitlabCommitStatus name: 'build', state: 'success'
+            archiveArtifacts artifacts: 'cli-native/target/mconv,cli-native/target/npm-dist/*.tgz', fingerprint: true
         }
     }
 }

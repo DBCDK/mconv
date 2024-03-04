@@ -46,3 +46,4 @@ buildNumber.properties
 .project
 
 package-lock.json
+.java-version
