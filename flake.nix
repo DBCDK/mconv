@@ -10,10 +10,22 @@
     mavenix.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs@{ flake-parts, nixpkgs, mavenix, ... }:
+  outputs = inputs@{ self, flake-parts, nixpkgs, mavenix, ... }:
+    let
+    pname="mconv";
+    in
     flake-parts.lib.mkFlake { inherit inputs; } {
-
       systems = nixpkgs.lib.systems.flakeExposed ;
+
+      flake = {
+          overlays.default = final: prev: {
+            "${pname}" = final.callPackage ./default.nix {
+              src = final.nix-gitignore.gitignoreSource [] ./.;
+              mavenix = import mavenix { pkgs = final; };
+            };
+          };
+      };
+
       perSystem = { config, pkgs, system, ... }:
       let
         pname="mconv";
@@ -30,11 +42,17 @@
                   ];
                 };
          buildPackages = [ pkgs.graalvm-ce  ];
-      in {
+      in rec {
         devShells.default = pkgs.mkShell {
                 name = "dev-env ${pname}";
                 buildInputs = [ pkgs.graalvm-ce pkgs.maven  ] ;
         };
+        #packages.default = packages.${pname};
+        packages.mconv = pkgs.callPackage ./default.nix {
+            src = pkgs.nix-gitignore.gitignoreSource [] ./.;
+            mavenix = import mavenix { pkgs = pkgs; };
+        };
+
 
 
       };
