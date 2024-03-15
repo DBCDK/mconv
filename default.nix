@@ -37,6 +37,7 @@ in {
   postInstall = ''
     mkdir -p $out/bin
     makeWrapper ${pkgs.graalvm-ce}/bin/java $out/bin/mconv-jar --add-flags "-jar $out/share/java/mconv-cli-2.0.jar"
+    install -Dm775 ./cli-native/target/mconv $out/bin/mconv
   '';
 
 
