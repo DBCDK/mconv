@@ -115,6 +115,7 @@
                         <buildArg>--initialize-at-build-time=dk.dbc.marc.Marc8EncodeCodeTable$1</buildArg>
                         <buildArg>--initialize-at-build-time=dk.dbc.marc.MarcCharsetProvider</buildArg>
                         <buildArg>-H:+AddAllCharsets</buildArg>
+                        <buildArg>-H:-CheckToolchain</buildArg>
                     </buildArgs>
                 </configuration>
             </plugin>
