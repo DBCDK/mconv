@@ -45,9 +45,13 @@
       in rec {
         devShells.default = pkgs.mkShell {
                 name = "dev-env ${pname}";
-                buildInputs = [ pkgs.graalvm-ce pkgs.maven  ] ;
+                buildInputs = [
+                  pkgs.graalvm-ce
+                  pkgs.maven
+                  mavenix.defaultPackage.${system} ] ;
         };
-        #packages.default = packages.${pname};
+        packages.default = packages.mconv;
+
         packages.mconv = pkgs.callPackage ./default.nix {
             src = pkgs.nix-gitignore.gitignoreSource [] ./.;
             mavenix = import mavenix { pkgs = pkgs; };

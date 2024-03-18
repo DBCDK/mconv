@@ -7,9 +7,6 @@ let
     sha256 = lock.nodes.flake-compat.locked.narHash;
   }) { src = ./.; }).defaultNix;
 in {
-  # pkgs is pinned to 19.09 in mavenix-src,
-  # replace/invoke with <nixpkgs> or /path/to/your/nixpkgs_checkout
-  #pkgs ? (import mavenix-src {}).pkgs,
   pkgs ? import flake.inputs.nixpkgs {},
   mavenix ? import mavenix-src { inherit pkgs; },
   src ? ./.,
@@ -21,44 +18,19 @@ in {
 
   # Add build dependencies
   #
-  buildInputs = with pkgs; [ git makeWrapper ];
+  buildInputs = with pkgs; [ git ];
 
   # Set build environment variables
   #
-  MAVEN_OPTS = "-Dfile.encoding=UTF-8 -Dbuild_number=ja7";
+  MAVEN_OPTS = "-Dfile.encoding=UTF-8 -Dbuild_number=nix";
 
-  # Attributes are passed to the underlying `stdenv.mkDerivation`, so build
+  # Attributes are passed to the underlying `stdenv.mkDe:wqrivation`, so build
   #   hooks can be set here also.
-  #
-  #postInstall = ''
-  #  makeWrapper ${pkgs.jre8_headless}/bin/java $out/bin/my-bin \
-  #    --add-flags "-jar $out/share/java/my-proj.jar"
-  #'';
-  postInstall = ''
-    mkdir -p $out/bin
-    makeWrapper ${pkgs.graalvm-ce}/bin/java $out/bin/mconv-jar --add-flags "-jar $out/share/java/mconv-cli-2.0.jar"
-    install -Dm775 ./cli-native/target/mconv $out/bin/mconv
+  installPhase = ''
+      install -Dm775 ./cli-native/target/mconv $out/bin/mconv
   '';
 
-
-  # Add extra maven dependencies which might not have been picked up
-  #   automatically
-  #
-  #deps = [
-  #  { path = "org/group-id/artifactId/version/file.jar"; sha1 = "0123456789abcdef"; }
-  #  { path = "org/group-id/artifactId/version/file.pom"; sha1 = "123456789abcdef0"; }
-  #];
-
-  # Add dependencies on other mavenix derivations
-  #
-  #drvs = [ (import ../other/mavenix/derivation {}) ];
-
-  # Override which maven package to build with
   #
   maven = pkgs.maven.overrideAttrs (_: { jdk = pkgs.graalvm-ce; });
 
-  # Override remote repository URLs and settings.xml
-  #
-  #remotes = { central = "https://repo.maven.apache.org/maven2"; };
-  #settings = ./settings.xml;
 }
