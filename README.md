@@ -2,6 +2,8 @@
 mconv is a commandline-tool to read and parse MARC records from file and
 output in either MARCXCHANGE, MARC21, DANMARC2 line-format, JSONL or ISO2709.
 
+Code Moved to gitlab.dbc.dk 
+
 ## Installation
 
 Make sure that any existing `~/.mconv` directory has been removed.
